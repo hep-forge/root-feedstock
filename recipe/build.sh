@@ -216,8 +216,10 @@ if [[ "${target_platform}" == linux* ]]; then
 fi
 
 cmake .. $CMAKE_ARGS "${CMAKE_PLATFORM_FLAGS[@]}"
+echo "Configuration done."
 
 make
-make install
+echo "Compilation finished."
 
-cat VECCORE-prefix/src/VECCORE-stamp/VECCORE-install-*.log
+make install
+echo "Installation done."
