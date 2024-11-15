@@ -1,0 +1,154 @@
+{% set versions = {
+    "6.32.02": "332c763d2d5eb8a759893453637f24b3900476f73a1a4c7a205f8f7b3104f449"
+} %}
+
+{% set version = environ.get('COMMIT_VERSION', None) %}
+{% set version = version or versions.keys()|first %}
+{% set version = version|string %}
+
+package:
+  name: {{ environ.get('ANACONDA_PACKAGE', "root")|string|lower }}
+  version: {{ environ.get('ANACONDA_VERSION', version)|replace("-", ".") }}
+
+{% set clang_version = "16.0.6" %}
+{% set clang_patches_version = "root_"+(version|replace(".", "")) %}
+
+{% set builtin_pyroot = True %}
+{% set builtin_clang = False %}
+
+source:
+  url: "https://github.com/root-project/root/archive/refs/tags/v{{ version|replace(".", "-") }}.tar.gz"
+  {% if versions.get(version, None) %}
+  sha256: {{ versions.get(version) }}
+  {% endif %}
+  patches:
+    - patches/root-x.xx.xx_cling-runtime-sysroot.patch
+    - patches/root-x.xx.xx-osx-remove-hardcoded-sysroot.patch  # [osx]
+    - patches/0001-Hacks.patch
+    - patches/0001-Patch-for-apple-silicon.patch
+    - patches/0001-Set-LLVM_REQUIRES_EH-for-Cling.patch
+    - patches/disable-hsimple.root  # [build_platform != target_platform]
+    - patches/0001-Reset-CMAKE-module-path-for-interpreter.patch
+    - patches/0001-force-one-modulemap-for-darwin.patch  # [osx]
+    - patches/0001-Remove-check-for-SDK-version-in-CIFactory.patch  # [osx]
+    - patches/0001-avoid-linking-TPython-against-libPython.patch  # [osx]
+    - patches/0001-std_darwin.modulemap-Remove-headers-for-MacOSX15.0.s.patch  # [osx]
+    - patches/0001-Hackily-fix-cross-compilation.patch
+
+build:
+  ignore_prefix_files:
+    - lib/*.pcm            # [not aarch64]
+    - etc/allDict.cxx.pch  # [aarch64]
+  ignore_run_exports_from:
+    - clangdev
+  script_env:
+    - clang_version={{ clang_version }}
+    - clang_patches_version={{ clang_patches_version }}
+    {% if builtin_pyroot %}- ROOT_CONDA_BUILTIN_PYROOT=1 {%- endif %}
+    {% if builtin_clang %}- ROOT_CONDA_BUILTIN_CLANG=1 {%- endif %}
+    {% if "ROOT_CONDA_BUILD_TYPE" in os.environ %}- ROOT_CONDA_BUILD_TYPE {%- endif %}
+
+requirements:
+  build:
+    - {{ compiler('c') }}
+    - {{ compiler('cxx') }}
+    - libstdcxx-ng
+    - libcxx
+
+    - autoconf
+    - cmake
+    - git
+    - pkg-config
+    - sed
+    - make
+
+    # Required for OpenGL support
+    # See https://conda-forge.org/docs/maintainer/knowledge_base.html?highlight=cdt#libgl
+    - {{ cdt('mesa-libgl-devel') }}  # [linux]
+    - {{ cdt('mesa-dri-drivers') }}  # [linux]
+    - {{ cdt('libselinux') }}  # [linux]
+    - {{ cdt('libxdamage') }}  # [linux]
+    - {{ cdt('libxxf86vm') }}  # [linux]
+
+  host:
+    - {{ compiler('c') }}  # [linux]
+    - {{ compiler('cxx') }}  # [linux]
+    - libstdcxx-ng
+    - binutils
+    - python
+    - numpy
+    - afterimage
+    - lz4-c
+    - xxhash
+    - cfitsio
+    - gdk-pixbuf
+    - giflib
+    - freetype
+    - gtest
+    - libxml2
+    - ftgl
+    - glew
+    - gl2ps
+    - glib
+    - gsl
+    - nlohmann_json
+    - pcre2
+    - fftw
+    - zlib-ng
+#    - zlib<1.3
+    - zstd
+#    - tbb<2022
+#    - tbb-devel<2022
+    - tbb
+    - tbb-devel
+    - vector-classes
+    - vdt
+    - libglu
+    - xz
+    - graphviz
+    - pythia8
+    - xrootd
+    - openssl
+    - davix>=0.6.4
+    - xorg-libx11  # [linux]
+    - xorg-libxau  # [linux]
+    - xorg-libxcursor  # [linux]
+    - xorg-libxext  # [linux]
+    - xorg-libxfixes  # [linux]
+    - xorg-libxft  # [linux]
+    - xorg-libxpm  # [linux]
+{% if not builtin_clang %}
+    - llvm {{ clang_version }}  # [not (osx and arm64)]
+    - llvmdev {{ clang_version }}  # [not (osx and arm64)]
+    - clangdev {{ clang_version }} {{ clang_patches_version }}*  # [not (osx and arm64)]
+{% endif %}
+    - libcxx
+    - libstdcxx-ng
+
+  run:
+    - python
+    - numpy
+    - libcxx
+    - libstdcxx-ng
+    - xxhash
+    - nlohmann_json
+    - {{ compiler('c') }}
+    - {{ compiler('cxx') }}
+    - xz
+    - libglu
+    - graphviz
+    - xorg-libx11  # [linux]
+    - xorg-libxext  # [linux]
+    - xorg-libxpm  # [linux]
+    - xorg-libxft  # [linux]
+
+about:
+  home: "https://lhapdf.hepforge.org"
+  license: "GPL-3.0"
+  summary: "LHAPDF is the standard tool for evaluating parton distribution functions (PDFs) in high-energy physics."
+  description: |
+    LHAPDF is the standard tool for evaluating parton distribution functions (PDFs) in high-energy physics. PDFs encode the flavour and momentum structure of composite particles, such as protons, pions and nuclei; most cross-section calculations are based on parton-level matrix-elements which must be connected to the real interacting particles, hence PDFs are an essential ingredient of phenomenological and experimental studies at hadron and heavy-ion colliders (e.g. LHC, HERA, Tevatron, EIC, FCC) and in cosmic-ray physics.
+
+extra:
+  recipe-maintainers:
+    - meiyasan
