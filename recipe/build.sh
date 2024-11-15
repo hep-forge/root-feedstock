@@ -217,5 +217,7 @@ fi
 
 cmake .. $CMAKE_ARGS "${CMAKE_PLATFORM_FLAGS[@]}"
 
-make -j$(nproc)
-make install
+make -j$(nproc) || true
+# make install
+
+cat VECCORE-prefix/src/VECCORE-stamp/VECCORE-install-*.log
