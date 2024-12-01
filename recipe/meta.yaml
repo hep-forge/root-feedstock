@@ -71,8 +71,12 @@ requirements:
     - {{ cdt('libxxf86vm') }}  # [linux]
 
   host:
+    - libblas
+    - libcblas
     - {{ compiler('c') }}  # [linux]
     - {{ compiler('cxx') }}  # [linux]
+    - {{ stdlib('c') }} # [linux]
+    - {{ pin_compatible('libcxx', min_pin='x', max_pin='x') }}
     - libstdcxx-ng
     - binutils
     - python
@@ -124,8 +128,12 @@ requirements:
 {% endif %}
     - libcxx
     - libstdcxx-ng
-
+    
   run:
+    - {{ pin_compatible('libcxx', min_pin='x', max_pin='x') }}
+    - {{ compiler('c') }}
+    - {{ compiler('cxx') }}
+    - {{ stdlib("c") }}
     - python
     - numpy
     - libcxx
@@ -136,6 +144,7 @@ requirements:
     - {{ compiler('cxx') }}
     - xz
     - libglu
+    - cffi
     - graphviz
     - xorg-libx11  # [linux]
     - xorg-libxext  # [linux]
