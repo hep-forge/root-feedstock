@@ -41,7 +41,7 @@ source:
     - patches/0001-Hackily-fix-cross-compilation.patch
 
 build:
-  number: {{ build_number }}
+  number: 0
   skip: True  # [win]
   ignore_prefix_files:
     - lib/*.pcm            # [not aarch64]
