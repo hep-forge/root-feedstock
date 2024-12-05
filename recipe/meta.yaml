@@ -54,7 +54,6 @@ build:
     - clang_patches_version={{ clang_patches_version }}
     {% if builtin_pyroot %}- ROOT_CONDA_BUILTIN_PYROOT=1 {%- endif %}
     {% if builtin_clang %}- ROOT_CONDA_BUILTIN_CLANG=1 {%- endif %}
-    {% if run_gtests %}- ROOT_CONDA_RUN_GTESTS=1 {%- endif %}
     {% if "ROOT_CONDA_BUILD_TYPE" in os.environ %}- ROOT_CONDA_BUILD_TYPE {%- endif %}
 
 requirements:
