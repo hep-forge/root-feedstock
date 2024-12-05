@@ -1,5 +1,7 @@
 c_compiler:
 - vs2019
+c_stdlib:
+- vs
 cfitsio:
 - 4.3.1
 channel_sources:
@@ -24,6 +26,10 @@ graphviz:
 - '12'
 gsl:
 - '2.7'
+libblas:
+- 3.9 *netlib
+libcblas:
+- 3.9 *netlib
 libxml2:
 - '2'
 lz4_c:

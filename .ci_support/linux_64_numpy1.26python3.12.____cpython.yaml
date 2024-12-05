@@ -2,6 +2,10 @@ c_compiler:
 - gcc
 c_compiler_version:
 - '13'
+c_stdlib:
+- sysroot
+c_stdlib_version:
+- '2.17'
 cdt_name:
 - conda
 cfitsio:
@@ -15,7 +19,7 @@ cxx_compiler:
 cxx_compiler_version:
 - '13'
 docker_image:
-- quay.io/condaforge/linux-anvil-cos7-x86_64
+- quay.io/condaforge/linux-anvil-x86_64:alma9
 fftw:
 - '3'
 freetype:
@@ -32,6 +36,10 @@ graphviz:
 - '12'
 gsl:
 - '2.7'
+libblas:
+- 3.9 *netlib
+libcblas:
+- 3.9 *netlib
 libxml2:
 - '2'
 lz4_c:

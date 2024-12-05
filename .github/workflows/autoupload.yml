@@ -144,12 +144,6 @@ jobs:
           for CONDA in $(find pkgs -name "*.conda" | sort); do         
             /usr/share/miniconda/bin/anaconda -t $ANACONDA_TOKEN upload --force "$CONDA" --label "$ANACONDA_LABEL"
           done
-          
-      - name: Upload Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: conda-packages
-          path: pkgs/*/*.conda
 
       - name: Job Summary
         if: success()
@@ -171,42 +165,6 @@ jobs:
               echo "  * \`$(basename ${PACKAGE_PATH})|“ ~ $((${PACKAGE_SIZE:-0} / 1024))KB" >> $GITHUB_STEP_SUMMARY
           done
           echo "" >> $GITHUB_STEP_SUMMARY
-
-  publish:
-    runs-on: ubuntu-latest
-    needs: [env, build]
-    steps:
-
-      - name: Download Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: conda-packages
-          path: pkgs
-
-      - name: Install Forge & Tools
-        run: |
-          /usr/share/miniconda/bin/conda install -c conda-forge -y anaconda-client
-
-      - name: Upload to Anaconda
-        env:
-          ANACONDA_PACKAGE: ${{ needs.env.outputs.ANACONDA_PACKAGE }}
-          ANACONDA_VERSION: ${{ needs.env.outputs.ANACONDA_VERSION }}
-          ANACONDA_LABEL:   ${{ needs.env.outputs.ANACONDA_LABEL }}
-          ANACONDA_TOKEN:   ${{ secrets.ANACONDA_TOKEN }}
-        run: |
-          [ -z "$ANACONDA_VERSION" ] && exit 1
-          for CONDA in $(find pkgs -name "*.conda" | sort); do         
-            /usr/share/miniconda/bin/anaconda -t $ANACONDA_TOKEN upload --force "$CONDA" --label "$ANACONDA_LABEL"
-          done
-
-      - name: Job Summary
-        if: success() 
-        env:
-          ANACONDA_PACKAGE: ${{ needs.env.outputs.ANACONDA_PACKAGE }}
-          ANACONDA_VERSION: ${{ needs.env.outputs.ANACONDA_VERSION }}
-          ANACONDA_LABEL:   ${{ needs.env.outputs.ANACONDA_LABEL }}
-          ANACONDA_TOKEN:   ${{ secrets.ANACONDA_TOKEN }}
-        run: |
 
           echo "### 📥 Package Location" >> $GITHUB_STEP_SUMMARY
           echo "- https://anaconda.org/${GITHUB_REPOSITORY_OWNER}/${ANACONDA_PACKAGE}" >> $GITHUB_STEP_SUMMARY
