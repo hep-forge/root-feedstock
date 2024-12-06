@@ -278,18 +278,18 @@ CMAKE_PLATFORM_FLAGS+=("-Droottest=OFF")
 # Now we can actually run CMake
 cmake $CMAKE_ARGS "${CMAKE_PLATFORM_FLAGS[@]}" ../root-source
 
-set +e
+# set +e
 if [[ "${target_platform}" == osx* ]]; then
     # This is a horrible hack to hide the LLVM/Clang symbols in libCling.so on macOS
     cd core/metacling/src
     # First build libCling.so
     make #"-j${CPU_COUNT}"
-    if [ ! $? -eq 0 ]; then
-      for log_file in $(find . \( -name '*-configure-*.log' -o -name '*-build-*.log' -o -name '*-install-*.log' \)); do
-        cat "$log_file"
-      done
-      exit 1
-    fi
+    # if [ ! $? -eq 0 ]; then
+    #   for log_file in $(find . \( -name '*-configure-*.log' -o -name '*-build-*.log' -o -name '*-install-*.log' \)); do
+    #     cat "$log_file"
+    #   done
+    #   exit 1
+    # fi
     
     # Find the symbols in libCling.so
     nm -g ../../../lib/libCling.so | ruby -ne 'if /^[0-9a-f]+.*\s(\S+)$/.match($_) then print $1,"\n" end' | sort -u > original.exp
@@ -301,12 +301,12 @@ if [[ "${target_platform}" == osx* ]]; then
     sed -i "s@$CXX @$CXX -exported_symbols_list $PWD/allowed_symbols.exp @g" CMakeFiles/Cling.dir/link.txt
     # Build libCling.so again now the link command has been updated
     make #"-j${CPU_COUNT}"
-    if [ ! $? -eq 0 ]; then
-      for log_file in $(find . \( -name '*-configure-*.log' -o -name '*-build-*.log' -o -name '*-install-*.log' \)); do
-        cat "$log_file"
-      done
-      exit 1
-    fi
+    # if [ ! $? -eq 0 ]; then
+    #   for log_file in $(find . \( -name '*-configure-*.log' -o -name '*-build-*.log' -o -name '*-install-*.log' \)); do
+    #     cat "$log_file"
+    #   done
+    #   exit 1
+    # fi
     
     # Show some details about the number of symbols before and after in case further debugging is required
     nm -g ../../../lib/libCling.so | ruby -ne 'if /^[0-9a-f]+.*\s(\S+)$/.match($_) then print $1,"\n" end' | sort -u > new.exp
@@ -315,14 +315,14 @@ if [[ "${target_platform}" == osx* ]]; then
 fi
 
 make #"-j${CPU_COUNT}"
-if [ ! $? -eq 0 ]; then
-  for log_file in $(find . \( -name '*-configure-*.log' -o -name '*-build-*.log' -o -name '*-install-*.log' \)); do
-    cat "$log_file"
-  done
-  exit 1
-fi
+# if [ ! $? -eq 0 ]; then
+#   for log_file in $(find . \( -name '*-configure-*.log' -o -name '*-build-*.log' -o -name '*-install-*.log' \)); do
+#     cat "$log_file"
+#   done
+#   exit 1
+# fi
 
-set -e
+# set -e
 
 # cd tutorials
 # EXTRA_CLING_ARGS='-O1' LD_LIBRARY_PATH=$SRC_DIR/build-dir/lib: ROOTIGNOREPREFIX=1 ROOT_HIST=0 $SRC_DIR/build-dir/bin/root.exe -l -q -b -n -x hsimple.C -e return
