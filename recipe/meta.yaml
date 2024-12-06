@@ -1,6 +1,6 @@
 {% set versions = {
-    "6.32.02": "332c763d2d5eb8a759893453637f24b3900476f73a1a4c7a205f8f7b3104f449",
-    "6.34.00": "59e73ae521f49b471917d9ff7193c52a418be9b5b24e94e5f1795ad0f301a9bc"
+    "6.34.00": "59e73ae521f49b471917d9ff7193c52a418be9b5b24e94e5f1795ad0f301a9bc",
+    "6.32.02": "332c763d2d5eb8a759893453637f24b3900476f73a1a4c7a205f8f7b3104f449"
 } %}
 
 {% set version = environ.get('COMMIT_VERSION', None) %}
@@ -11,7 +11,7 @@ package:
   name: {{ environ.get('ANACONDA_PACKAGE', "root")|string|lower }}
   version: {{ environ.get('ANACONDA_VERSION', version)|replace("-", ".") }}
 
-{% set clang_version = "16.0.6" %}
+{% set clang_version = "18.1.0" %}
 {% set clang_patches_version = "root_"+(version|replace(".", "")) %}
 
 {% set builtin_pyroot = True %}
