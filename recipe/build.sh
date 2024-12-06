@@ -284,8 +284,8 @@ if [[ "${target_platform}" == osx* ]]; then
     cd core/metacling/src
     # First build libCling.so
     make -j2 #"-j${CPU_COUNT}"
-    if [ $? -eq 1 ]; then
-      for log_file in $(find . -name '*.log'); do
+    if [ ! $? -eq 0 ]; then
+      for log_file in $(find . \( -name '*-configure-*.log' -o -name '*-build-*.log' -o -name '*-install-*.log' \)); do
         cat "$log_file"
       done
       exit 1
@@ -301,8 +301,8 @@ if [[ "${target_platform}" == osx* ]]; then
     sed -i "s@$CXX @$CXX -exported_symbols_list $PWD/allowed_symbols.exp @g" CMakeFiles/Cling.dir/link.txt
     # Build libCling.so again now the link command has been updated
     make -j2 #"-j${CPU_COUNT}"
-    if [ $? -eq 1 ]; then
-      for log_file in $(find . -name '*.log'); do
+    if [ ! $? -eq 0 ]; then
+      for log_file in $(find . \( -name '*-configure-*.log' -o -name '*-build-*.log' -o -name '*-install-*.log' \)); do
         cat "$log_file"
       done
       exit 1
@@ -315,8 +315,8 @@ if [[ "${target_platform}" == osx* ]]; then
 fi
 
 make -j2
-if [ $? -eq 1 ]; then
-  for log_file in $(find . -name '*.log'); do
+if [ ! $? -eq 0 ]; then
+  for log_file in $(find . \( -name '*-configure-*.log' -o -name '*-build-*.log' -o -name '*-install-*.log' \)); do
     cat "$log_file"
   done
   exit 1
