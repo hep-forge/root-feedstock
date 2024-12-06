@@ -283,7 +283,7 @@ if [[ "${target_platform}" == osx* ]]; then
     # This is a horrible hack to hide the LLVM/Clang symbols in libCling.so on macOS
     cd core/metacling/src
     # First build libCling.so
-    make -j2 #"-j${CPU_COUNT}"
+    make #"-j${CPU_COUNT}"
     if [ ! $? -eq 0 ]; then
       for log_file in $(find . \( -name '*-configure-*.log' -o -name '*-build-*.log' -o -name '*-install-*.log' \)); do
         cat "$log_file"
@@ -300,7 +300,7 @@ if [[ "${target_platform}" == osx* ]]; then
     # Add "-exported_symbols_list" to the link command
     sed -i "s@$CXX @$CXX -exported_symbols_list $PWD/allowed_symbols.exp @g" CMakeFiles/Cling.dir/link.txt
     # Build libCling.so again now the link command has been updated
-    make -j2 #"-j${CPU_COUNT}"
+    make #"-j${CPU_COUNT}"
     if [ ! $? -eq 0 ]; then
       for log_file in $(find . \( -name '*-configure-*.log' -o -name '*-build-*.log' -o -name '*-install-*.log' \)); do
         cat "$log_file"
@@ -314,7 +314,7 @@ if [[ "${target_platform}" == osx* ]]; then
     cd -
 fi
 
-make -j2
+make #"-j${CPU_COUNT}"
 if [ ! $? -eq 0 ]; then
   for log_file in $(find . \( -name '*-configure-*.log' -o -name '*-build-*.log' -o -name '*-install-*.log' \)); do
     cat "$log_file"
