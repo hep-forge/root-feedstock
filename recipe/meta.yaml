@@ -132,7 +132,7 @@ requirements:
     - clangdev {{ clang_version }} {{ clang_patches_version }}*  # [not (osx and arm64)]
 #{% else %}
 #    - clangdev {{ clang_version }} # [not (osx and arm64)]
-{% endif %}
+#{% endif %}
 {% endif %}
 {% if builtin_pyroot %}
     - python
