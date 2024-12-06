@@ -1,5 +1,6 @@
 #!/bin/bash
 set -x
+export target_platform="linux-64"
 
 # rebuild afterimage ./configure script after patch
 (cd root-source/graf2d/asimage/src/libAfterImage; autoconf)
@@ -93,6 +94,7 @@ export CXXFLAGS
 # Patch up with sed
 sed -i -E 's#(ROOT_TEST_DRIVER RootTestDriver.cmake PATHS \$\{THISDIR\} \$\{CMAKE_MODULE_PATH\} NO_DEFAULT_PATH)#\1 CMAKE_FIND_ROOT_PATH_BOTH#g' \
     ../root-source/cmake/modules/RootNewMacros.cmake
+
 
 # The basics
 if [ "${ROOT_CONDA_BUILD_TYPE-}" == "" ]; then
@@ -280,7 +282,7 @@ if [[ "${target_platform}" == osx* ]]; then
     # This is a horrible hack to hide the LLVM/Clang symbols in libCling.so on macOS
     cd core/metacling/src
     # First build libCling.so
-    make "-j${CPU_COUNT}"
+    make -j2 #"-j${CPU_COUNT}"
     # Find the symbols in libCling.so
     nm -g ../../../lib/libCling.so | ruby -ne 'if /^[0-9a-f]+.*\s(\S+)$/.match($_) then print $1,"\n" end' | sort -u > original.exp
     # Find the symbols in the LLVM and Clang static libraries
@@ -297,7 +299,7 @@ if [[ "${target_platform}" == osx* ]]; then
     cd -
 fi
 
-make "-j${CPU_COUNT}"
+make -j2 #"-j${CPU_COUNT}"
 
 # cd tutorials
 # EXTRA_CLING_ARGS='-O1' LD_LIBRARY_PATH=$SRC_DIR/build-dir/lib: ROOTIGNOREPREFIX=1 ROOT_HIST=0 $SRC_DIR/build-dir/bin/root.exe -l -q -b -n -x hsimple.C -e return
