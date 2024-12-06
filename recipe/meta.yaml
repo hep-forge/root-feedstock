@@ -128,10 +128,10 @@ requirements:
 {% if not builtin_clang %}
     - llvm {{ clang_version }}  # [not (osx and arm64)]
     - llvmdev {{ clang_version }}  # [not (osx and arm64)]
-{% if version < "6.34" %}
+#{% if version < "6.34" %}
     - clangdev {{ clang_version }} {{ clang_patches_version }}*  # [not (osx and arm64)]
-{% else %}
-    - clangdev {{ clang_version }} # [not (osx and arm64)]
+#{% else %}
+#    - clangdev {{ clang_version }} # [not (osx and arm64)]
 {% endif %}
 {% endif %}
 {% if builtin_pyroot %}
