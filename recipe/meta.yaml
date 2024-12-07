@@ -15,7 +15,7 @@ package:
 {% set clang_patches_version = "root_"+(version|replace(".", "")) %}
 
 {% set builtin_pyroot = True %}
-{% set builtin_clang = False %}
+{% set builtin_clang = True %}
 source:
   url: "https://github.com/root-project/root/archive/refs/tags/v{{ version|replace(".", "-") }}.tar.gz"
   {% if versions.get(version, None) %}
