@@ -104,6 +104,7 @@ requirements:
     - nlohmann_json
     - pcre2
     - fftw
+    - zlib
     - zlib-ng
     - zstd
     - tbb
