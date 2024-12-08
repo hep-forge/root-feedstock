@@ -1,77 +1,35 @@
 #!/bin/bash
 set -x
-export target_platform="linux-64"
+
+mkdir build-scripts
+cd build-scripts
+
+cmake $RECIPE_DIR/scripts
+cd ..
 
 # rebuild afterimage ./configure script after patch
-(cd root-source/graf2d/asimage/src/libAfterImage; autoconf)
+(cd graf2d/asimage/src/libAfterImage; autoconf)
 
-if [[ "${target_platform}" == "linux-"* ]]; then
-  # Conda's binary relocation can result in string changing which can result in errors like
-  #   > $ root.exe -l -b -q -x root-feedstock/recipe/test.cpp++
-  #   > powerpc64le-conda-linux-gnu-c++: error: missing filename after '-o'
-  # https://gitter.im/conda-forge/conda-forge.github.io?at=61e18f469a3354540621b912
-  export CXXFLAGS="${CXXFLAGS} -fno-merge-constants"
-  export CFLAGS="${CFLAGS} -fno-merge-constants"
-fi
+export target_platform="linux-64"
 
-# https://github.com/conda-forge/root-feedstock/issues/160
-export CXXFLAGS="${CXXFLAGS} -D__ROOFIT_NOBANNER"
+export CXXFLAGS="${CXXFLAGS} -fno-merge-constants"
+export CFLAGS="${CFLAGS} -fno-merge-constants"
 
-if [[ "${target_platform}" == "linux-ppc64le" ]]; then
-  export CXXFLAGS="${CXXFLAGS} -fplt"
-  export CFLAGS="${CFLAGS} -fplt"
-fi
+INSTALL_SYSROOT=$(python -c "import os; rel = os.path.relpath('$CONDA_BUILD_SYSROOT', '$CONDA_PREFIX'); assert not rel.startswith('.'); print(os.path.join('$PREFIX', rel))")
+CMAKE_PLATFORM_FLAGS+=("-DCMAKE_AR=${GCC_AR}")
+CMAKE_PLATFORM_FLAGS+=("-DCLANG_DEFAULT_LINKER=${LD_GOLD}")
+CMAKE_PLATFORM_FLAGS+=("-DDEFAULT_SYSROOT=${INSTALL_SYSROOT}")
+CMAKE_PLATFORM_FLAGS+=("-DRT_LIBRARY=${INSTALL_SYSROOT}/usr/lib/librt.so")
 
-# Manually set the deployment_target
-# May not be very important but nice to do
-OLDVERSIONMACOS='${MACOSX_VERSION}'
-sed -i -e "s@${OLDVERSIONMACOS}@${MACOSX_DEPLOYMENT_TARGET}@g" \
-    root-source/cmake/modules/SetUpMacOS.cmake
+# Fix finding X11 with CMake, copied from below with minor modifications
+# https://github.com/Kitware/CMake/blob/e59e17c1c7059b7d0f02d6b12bc3094a2afee778/Modules/FindX11.cmake
+cp "${RECIPE_DIR}/FindX11.cmake" "cmake/modules/"
 
-declare -a CMAKE_PLATFORM_FLAGS
-
-if [[ "${target_platform}" == "osx-arm64" ]]; then
-    CONDA_SUBDIR=${target_platform} conda create --prefix "${SRC_DIR}/clang_env" --yes \
-        "llvm ${clang_version}" "clangdev ${clang_version} ${clang_patches_version}*"
-    Clang_DIR=${SRC_DIR}/clang_env
-    CMAKE_PLATFORM_FLAGS+=("-DLLVM_CMAKE_PATH=${SRC_DIR}/clang_env/lib/cmake")
-else
-    Clang_DIR=${PREFIX}
-fi
-
-if [[ "${target_platform}" == linux* ]]; then
-    INSTALL_SYSROOT=$(python -c "import os; rel = os.path.relpath('$CONDA_BUILD_SYSROOT', '$CONDA_PREFIX'); assert not rel.startswith('.'); print(os.path.join('$PREFIX', rel))")
-    CMAKE_PLATFORM_FLAGS+=("-DCMAKE_AR=${GCC_AR}")
-    CMAKE_PLATFORM_FLAGS+=("-DCLANG_DEFAULT_LINKER=${LD_GOLD}")
-    CMAKE_PLATFORM_FLAGS+=("-DDEFAULT_SYSROOT=${INSTALL_SYSROOT}")
-    CMAKE_PLATFORM_FLAGS+=("-DRT_LIBRARY=${INSTALL_SYSROOT}/usr/lib/librt.so")
-
-    # Fix finding X11 with CMake, copied from below with minor modifications
-    # https://github.com/Kitware/CMake/blob/e59e17c1c7059b7d0f02d6b12bc3094a2afee778/Modules/FindX11.cmake
-    cp "${RECIPE_DIR}/FindX11.cmake" "root-source/cmake/modules/"
-
-    # Hide symbols from LLVM/clang to avoid conflicts with other libraries
-    for lib_name in $(ls "${PREFIX}/lib" | grep -E 'lib(LLVM|clang).*\.a'); do
-        export CXXFLAGS="${CXXFLAGS} -Wl,--exclude-libs,${lib_name}"
-    done
-    echo "CXXFLAGS is now '${CXXFLAGS}'"
-else
-    CMAKE_PLATFORM_FLAGS+=("-DBLA_PREFER_PKGCONFIG=ON")
-    clang_version_split=(${clang_version//./ })
-    CMAKE_PLATFORM_FLAGS+=("-DCLANG_RESOURCE_DIR_VERSION=${clang_version_split[0]}")
-
-    # HACK: Hack the macOS SDK to make rootcling find the correct ncurses
-    if [[ -f  "$CONDA_BUILD_SYSROOT/usr/include/module.modulemap.bak" ]]; then
-        echo "ERROR: Looks like the macOS SDK hack has already been applied"
-        exit 1
-    else
-        sed -i.bak "s@\"ncurses.h\"@\"${PREFIX}/include/ncurses.h\"@g" "${CONDA_BUILD_SYSROOT}/usr/include/module.modulemap"
-    fi
-fi
-
-if [[ "${target_platform}" == osx* ]]; then
-    CXXFLAGS="${CXXFLAGS} -D_LIBCPP_DISABLE_AVAILABILITY"
-fi
+# Hide symbols from LLVM/clang to avoid conflicts with other libraries
+for lib_name in $(ls "${PREFIX}/lib" | grep -E 'lib(LLVM|clang).*\.a'); do
+    export CXXFLAGS="${CXXFLAGS} -Wl,--exclude-libs,${lib_name}"
+done
+echo "CXXFLAGS is now '${CXXFLAGS}'"
 
 export CFLAGS="${CFLAGS//-isystem /-I}"
 export CPPFLAGS="${CPPFLAGS//-isystem /-I}"
@@ -83,6 +41,9 @@ export DEBUG_FORTRANFLAGS="${DEBUG_FORTRANFLAGS//-isystem /-I}"
 export FFLAGS="${FFLAGS//-isystem /-I}"
 export FORTRANFLAGS="${FORTRANFLAGS//-isystem /-I}"
 
+Clang_DIR=${PREFIX}
+
+declare -a CMAKE_PLATFORM_FLAGS
 mkdir -p build-dir
 cd build-dir
 
@@ -93,8 +54,7 @@ export CXXFLAGS
 # The cross-linux toolchain breaks find_file relative to the current file
 # Patch up with sed
 sed -i -E 's#(ROOT_TEST_DRIVER RootTestDriver.cmake PATHS \$\{THISDIR\} \$\{CMAKE_MODULE_PATH\} NO_DEFAULT_PATH)#\1 CMAKE_FIND_ROOT_PATH_BOTH#g' \
-    ../root-source/cmake/modules/RootNewMacros.cmake
-
+    ../cmake/modules/RootNewMacros.cmake
 
 # The basics
 if [ "${ROOT_CONDA_BUILD_TYPE-}" == "" ]; then
@@ -157,9 +117,9 @@ else
 fi
 
 # Enable some vectorisation options
-# if [[ "${target_platform}" == *-64 ]]; then
-#     export CXXFLAGS="${CXXFLAGS} -march=nehalem"
-# fi
+if [[ "${target_platform}" == *-64 ]]; then
+    export CXXFLAGS="${CXXFLAGS} -march=nehalem"
+fi
 CMAKE_PLATFORM_FLAGS+=("-Dveccore=ON")
 CMAKE_PLATFORM_FLAGS+=("-Dvc=ON")
 CMAKE_PLATFORM_FLAGS+=("-Dbuiltin_veccore=ON")
@@ -259,80 +219,9 @@ CMAKE_PLATFORM_FLAGS+=("-Dwinrtdebug=OFF")
 # Platform specific options
 if [[ "${target_platform}" == linux* ]]; then
     CMAKE_PLATFORM_FLAGS+=("-Dx11=ON")
-else
-    CMAKE_PLATFORM_FLAGS+=("-Dcocoa=ON")
-fi
-# Should be disabled for ARM?
-# runtime_cxxmodules 	Enable runtime support for C++ modules 	ON
-
-# Configure the tests
-if [ "${ROOT_CONDA_RUN_GTESTS-}" = "1" ]; then
-    CMAKE_PLATFORM_FLAGS+=("-Dtesting=ON")
-    # Required for the tests to work correctly
-    export LD_LIBRARY_PATH=$PREFIX/lib
-else
-    CMAKE_PLATFORM_FLAGS+=("-Dtesting=OFF")
-fi
-CMAKE_PLATFORM_FLAGS+=("-Droottest=OFF")
-
-# Now we can actually run CMake
-cmake $CMAKE_ARGS "${CMAKE_PLATFORM_FLAGS[@]}" ../root-source
-
-# set +e
-if [[ "${target_platform}" == osx* ]]; then
-    # This is a horrible hack to hide the LLVM/Clang symbols in libCling.so on macOS
-    cd core/metacling/src
-    # First build libCling.so
-    make #"-j${CPU_COUNT}"
-    # if [ ! $? -eq 0 ]; then
-    #   for log_file in $(find . \( -name '*-configure-*.log' -o -name '*-build-*.log' -o -name '*-install-*.log' \)); do
-    #     cat "$log_file"
-    #   done
-    #   exit 1
-    # fi
-    
-    # Find the symbols in libCling.so
-    nm -g ../../../lib/libCling.so | ruby -ne 'if /^[0-9a-f]+.*\s(\S+)$/.match($_) then print $1,"\n" end' | sort -u > original.exp
-    # Find the symbols in the LLVM and Clang static libraries
-    nm -g ${Clang_DIR}/lib/lib{LLVM,clang}*.a | ruby -ne 'if /^[0-9a-f]+.*\s(\S+)$/.match($_) then print $1,"\n" end' | sort -u > clang_and_llvm.exp
-    # Find the difference, i.e. symbols that are in libCling.so but aren't defined in LLVM/Clang
-    comm -23 original.exp clang_and_llvm.exp > allowed_symbols.exp
-    # Add "-exported_symbols_list" to the link command
-    sed -i "s@$CXX @$CXX -exported_symbols_list $PWD/allowed_symbols.exp @g" CMakeFiles/Cling.dir/link.txt
-    # Build libCling.so again now the link command has been updated
-    make #"-j${CPU_COUNT}"
-    # if [ ! $? -eq 0 ]; then
-    #   for log_file in $(find . \( -name '*-configure-*.log' -o -name '*-build-*.log' -o -name '*-install-*.log' \)); do
-    #     cat "$log_file"
-    #   done
-    #   exit 1
-    # fi
-    
-    # Show some details about the number of symbols before and after in case further debugging is required
-    nm -g ../../../lib/libCling.so | ruby -ne 'if /^[0-9a-f]+.*\s(\S+)$/.match($_) then print $1,"\n" end' | sort -u > new.exp
-    wc -l *.exp
-    cd -
 fi
 
-make #"-j${CPU_COUNT}"
-# if [ ! $? -eq 0 ]; then
-#   for log_file in $(find . \( -name '*-configure-*.log' -o -name '*-build-*.log' -o -name '*-install-*.log' \)); do
-#     cat "$log_file"
-#   done
-#   exit 1
-# fi
+cmake .. $CMAKE_ARGS "${CMAKE_PLATFORM_FLAGS[@]}"
 
-# set -e
-
-# cd tutorials
-# EXTRA_CLING_ARGS='-O1' LD_LIBRARY_PATH=$SRC_DIR/build-dir/lib: ROOTIGNOREPREFIX=1 ROOT_HIST=0 $SRC_DIR/build-dir/bin/root.exe -l -q -b -n -x hsimple.C -e return
-# cd ..
-
-if [ "${ROOT_CONDA_RUN_GTESTS-}" = "1" ]; then
-    # Run gtests, never fail as Jenkins will check the test results instead
-    ctest "-j${CPU_COUNT}" -T test --no-compress-output \
-        --exclude-regex '^(pyunittests-pyroot-numbadeclare|test-periodic-build|tutorial-pyroot-pyroot004_NumbaDeclare-py)$' \
-        || true
-    rm -rf "${HOME}/feedstock_root/Testing"
-    cp -rp "Testing" "${HOME}/feedstock_root/"
-fi
+make -j4 #-j$(nproc)
+make install

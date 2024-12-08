@@ -1,6 +1,6 @@
 {% set versions = {
-    # "6.34.00": "59e73ae521f49b471917d9ff7193c52a418be9b5b24e94e5f1795ad0f301a9bc", # Clang patch required (conda search clangdev --info)
-    "6.32.02": "332c763d2d5eb8a759893453637f24b3900476f73a1a4c7a205f8f7b3104f449"
+    "6.32.02": "332c763d2d5eb8a759893453637f24b3900476f73a1a4c7a205f8f7b3104f449",
+    "6.34.00": "59e73ae521f49b471917d9ff7193c52a418be9b5b24e94e5f1795ad0f301a9bc"
 } %}
 
 {% set version = environ.get('COMMIT_VERSION', None) %}
@@ -15,13 +15,13 @@ package:
 {% set clang_patches_version = "root_"+(version|replace(".", "")) %}
 
 {% set builtin_pyroot = True %}
-{% set builtin_clang = False %}
+{% set builtin_clang = True %}
+
 source:
   url: "https://github.com/root-project/root/archive/refs/tags/v{{ version|replace(".", "-") }}.tar.gz"
   {% if versions.get(version, None) %}
   sha256: {{ versions.get(version) }}
   {% endif %}
-  folder: root-source
   patches:
     - patches/root-x.xx.xx_cling-runtime-sysroot.patch
     - patches/root-x.xx.xx-osx-remove-hardcoded-sysroot.patch  # [osx]
@@ -34,17 +34,11 @@ source:
     - patches/0001-Remove-check-for-SDK-version-in-CIFactory.patch  # [osx]
     - patches/0001-avoid-linking-TPython-against-libPython.patch  # [osx]
     - patches/0001-std_darwin.modulemap-Remove-headers-for-MacOSX15.0.s.patch  # [osx]
-{% if not builtin_pyroot %}
-    - patches/0001-Support-standalone-pyroot.patch
-{% endif %}
     - patches/0001-Hackily-fix-cross-compilation.patch
 
 build:
-  number: 0
-  skip: True  # [win]
   ignore_prefix_files:
     - lib/*.pcm            # [not aarch64]
-    # https://github.com/root-project/root/blob/975be1e7647098ee8db5333f0769fb12287d0f75/cmake/modules/RootBuildOptions.cmake#L328-L332
     - etc/allDict.cxx.pch  # [aarch64]
   ignore_run_exports_from:
     - clangdev
@@ -59,13 +53,15 @@ requirements:
   build:
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
-    - {{ stdlib("c") }}
+    - {{ stdlib('c') }}
+
     - autoconf
     - cmake
     - git
     - pkg-config
     - sed
     - make
+
     # Required for OpenGL support
     # See https://conda-forge.org/docs/maintainer/knowledge_base.html?highlight=cdt#libgl
     - {{ cdt('mesa-libgl-devel') }}  # [linux]
@@ -77,14 +73,15 @@ requirements:
   host:
     - {{ compiler('c') }}  # [linux]
     - {{ compiler('cxx') }}  # [linux]
-    - {{ stdlib("c") }}
+    - {{ stdlib('c') }}
     - libblas
     - libcblas
-    - libstdcxx-ng
     - libcxx
     - binutils
+{% if builtin_pyroot %}
     - python
     - numpy
+{% endif %}
     - afterimage
     - lz4-c
     - xxhash
@@ -112,7 +109,7 @@ requirements:
     - libglu
     - xz
     - graphviz
-    - pythia8
+    - pythia
     - xrootd
     - openssl
     - davix>=0.6.4
@@ -125,40 +122,28 @@ requirements:
     - xorg-libxpm  # [linux]
 {% if not builtin_clang %}
     - llvm {{ clang_version }}  # [not (osx and arm64)]
-    - llvmdev {{ clang_version }}  # [not (osx and arm64)
+    - llvmdev {{ clang_version }}  # [not (osx and arm64)]
     - clangdev {{ clang_version }} {{ clang_patches_version }}*  # [not (osx and arm64)]
 {% endif %}
-{% if builtin_pyroot %}
-    - python
-    - numpy
-{% endif %}
+
   run:
 {% if builtin_pyroot %}
     - python
 {% endif %}
-    # FIXME: Required to ensure a consistent etc/allDict.cxx.pch
-    - libcxx # {{ pin_compatible('libcxx', min_pin='x', max_pin='x') }}
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
-    - {{ stdlib("c") }}
-    - libstdcxx-ng
+    - {{ stdlib('c') }}
     - libcxx
     - xxhash
     - nlohmann_json
-    - cffi
+    - xz
+    - libglu
     - graphviz
     - xorg-libx11  # [linux]
     - xorg-libxext  # [linux]
     - xorg-libxpm  # [linux]
     - xorg-libxft  # [linux]
-    - libglu  # [linux]
 
-  run_constrained:
-    # Older numba versions have trouble with how LLVM is linked
-    - numba >=0.52
-    # Items listed here conflict with ROOT
-    - cling 9999
-    - root5 9999
 
 test:
   files:
@@ -168,25 +153,23 @@ test:
     - root -l -b -q -x test.cpp
     # When testing with -e, explicitly set the return code to zero
     - root -b -l -q -x -e '2+3; 0'
-    #- root -b -l -q -x -e 'gSystem->LoadAllLibraries(); 0'
-    # Check the thisroot scripts work
-    #- thisroot.sh
-    #- thisroot.csh
-    #- thisroot.fish
+    - root -b -l -q -x -e 'gSystem->LoadAllLibraries(); 0'
     # Test if OpenGL is working
-    #- root -b -l -q -x -e 'gStyle->SetCanvasPreferGL(kTRUE); c = new TCanvas(); if (!c->UseGL()) { throw std::runtime_error("OpenGL does not appear to be working"); }'
-    # This test will fail due to lack of graphics support but try it anyway
-    # It should exit with "TEveException: TEveManager::Create ROOT is running in batch mode."
-    #- root -b -l -q -x "${PREFIX}/tutorials/eve/geom_lhcb.C" || true
+    - root -b -l -q -x -e 'gStyle->SetCanvasPreferGL(kTRUE); c = new TCanvas(); if (!c->UseGL()) { throw std::runtime_error("OpenGL does not appear to be working"); }'
     # This tutorial uses davix to access a ROOT file over HTTP
-    #- root -b -l -q -x "${PREFIX}/tutorials/tree/run_h1analysis.C"
-    # FIXME: This test fails on ppc64le for some reason...
-    #- XrdSecPROTOCOL=unix python -c "import ROOT; ROOT.ROOT.EnableImplicitMT(); rdf = ROOT.RDataFrame('DecayTree', 'root://eospublic.cern.ch//eos/opendata/lhcb/AntimatterMatters2017/data/B2HHH_MagnetUp.root'); print(rdf.Cache('H1_PX').AsNumpy())"  # [not ppc64le]
+    - root -b -l -q -x "${PREFIX}/tutorials/tree/run_h1analysis.C"
     # This command only works if the compilers are available
-    #- root -l -b -q -x test.cpp++
-    # Ensure exceptions don't cause the interpreter to exit
-    # Expected to fail on apple silicon: https://github.com/root-project/root/issues/7541
-    #- echo '.q' | root -e 'sddsa0'  # [not (osx and arm64) and build_platform == target_platform]
+    - root -l -b -q -x test.cpp++
+
+
+about:
+  home: https://root.cern/
+  license: LGPL-2.1-only
+  summary: "ROOT: analyzing petabytes of data, scientifically."
+  description: |
+      ROOT is a modular scientific software toolkit. It provides all the functionalities needed to deal with big data
+      processing, statistical analysis, visualisation and storage. It is mainly written in C++ but integrated with other
+      languages such as Python and R.
 
 extra:
   recipe-maintainers:
