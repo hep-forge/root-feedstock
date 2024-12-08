@@ -223,5 +223,14 @@ fi
 
 cmake .. $CMAKE_ARGS "${CMAKE_PLATFORM_FLAGS[@]}"
 
+set +e
 make -j4 #-j$(nproc)
+ret=$?
+if [ ! $ret -eq 0 ]; then
+   for log_file in $(find . \( -name '*-configure-*.log' -o -name '*-build-*.log' -o -name '*-install-*.log' \)); do
+     cat "$log_file"
+   done
+   exit $ret
+fi
+
 make install
