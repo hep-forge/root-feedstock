@@ -37,6 +37,7 @@ source:
     - patches/0001-avoid-linking-TPython-against-libPython.patch  # [osx]
     - patches/0001-std_darwin.modulemap-Remove-headers-for-MacOSX15.0.s.patch  # [osx]
     - patches/0001-Hackily-fix-cross-compilation.patch
+    - patches/0001-veccore-jobserver-issue.patch
 
 build:
   ignore_prefix_files:

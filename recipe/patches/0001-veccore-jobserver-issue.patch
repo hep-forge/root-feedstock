@@ -1,0 +1,25 @@
+From d0dfa1b67b33d45251adc63cede530acff8f9c6b Mon Sep 17 00:00:00 2001
+From: Marco Meyer-Conde <marco.meyerconde@gmail.com>
+Date: Mon, 9 Dec 2024 02:38:27 +0000
+Subject: [PATCH] veccore-jobserver-issue
+
+---
+ cmake/modules/SearchInstalledSoftware.cmake | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/cmake/modules/SearchInstalledSoftware.cmake b/cmake/modules/SearchInstalledSoftware.cmake
+index 9d75aa0f..54d37426 100644
+--- a/cmake/modules/SearchInstalledSoftware.cmake
++++ b/cmake/modules/SearchInstalledSoftware.cmake
+@@ -1426,7 +1426,7 @@ if(builtin_veccore)
+                -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                -DCMAKE_CXX_FLAGS=${ROOT_EXTERNAL_CXX_FLAGS}
+                -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
+-    INSTALL_COMMAND env DESTDIR=${VecCore_DESTDIR} ${CMAKE_COMMAND} --build . --target install
++    INSTALL_COMMAND env DESTDIR=${VecCore_DESTDIR} ${CMAKE_COMMAND} --build . --target install -j1
+     TIMEOUT 600
+   )
+ 
+-- 
+2.47.1
+
