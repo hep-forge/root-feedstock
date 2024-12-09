@@ -38,6 +38,7 @@ source:
     - patches/0001-std_darwin.modulemap-Remove-headers-for-MacOSX15.0.s.patch  # [osx]
     - patches/0001-Hackily-fix-cross-compilation.patch
     - patches/0001-veccore-jobserver-issue.patch
+    - patches/0001-clad-jobserver-issue.patch
 
 build:
   ignore_prefix_files:
@@ -163,8 +164,6 @@ test:
     - root -b -l -q -x -e 'gStyle->SetCanvasPreferGL(kTRUE); c = new TCanvas(); if (!c->UseGL()) { throw std::runtime_error("OpenGL does not appear to be working"); }'
     # This tutorial uses davix to access a ROOT file over HTTP
     - root -b -l -q -x "${PREFIX}/tutorials/tree/run_h1analysis.C"
-    # This command only works if the compilers are available
-    - root -l -b -q -x test.cpp++
 
 
 about:
