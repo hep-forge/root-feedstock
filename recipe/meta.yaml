@@ -125,6 +125,7 @@ requirements:
     - xorg-libxfixes  # [linux]
     - xorg-libxft  # [linux]
     - xorg-libxpm  # [linux]
+    - xorg-xorgproto # [linux]
 {% if not builtin_clang %}
     - llvm {{ clang_version }}  # [not (osx and arm64)]
     - llvmdev {{ clang_version }}  # [not (osx and arm64)]
@@ -149,6 +150,7 @@ requirements:
     - xorg-libxext  # [linux]
     - xorg-libxpm  # [linux]
     - xorg-libxft  # [linux]
+    - xorg-xorgproto # [linux]
 
 
 test:
