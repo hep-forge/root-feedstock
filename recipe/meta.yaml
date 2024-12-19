@@ -91,7 +91,7 @@ requirements:
     - lz4-c
     - xxhash
     - cfitsio
-    # - gdk-pixbuf
+    - gdk-pixbuf # [win]
     - giflib
     - freetype
     - gtest
