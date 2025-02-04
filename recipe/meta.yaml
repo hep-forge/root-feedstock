@@ -13,7 +13,7 @@ package:
   version: {{ environ.get('ANACONDA_VERSION', version)|replace("-", ".") }}
 
 {% set clang_version = "16.0.6" %}
-{% set clang_patches_version = "root_"+(version|replace(".", "")) %}
+{% set clang_patches_version = "root_63202" %}
 
 {% set builtin_pyroot = True %}
 {% set builtin_clang = False %}
