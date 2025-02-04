@@ -3,11 +3,15 @@ MACOSX_DEPLOYMENT_TARGET:
 MACOSX_SDK_VERSION:
 - '11.0'
 ace:
-- 8.0.1
+- 8.0.2
 c_compiler:
 - clang
 c_compiler_version:
 - '18'
+c_stdlib:
+- macosx_deployment_target
+c_stdlib_version:
+- '11.0'
 cfitsio:
 - 4.3.1
 channel_sources:
@@ -22,8 +26,6 @@ fftw:
 - '3'
 freetype:
 - '2'
-gdk_pixbuf:
-- '2'
 giflib:
 - '5.2'
 glew:
@@ -34,14 +36,18 @@ graphviz:
 - '12'
 gsl:
 - '2.7'
+libblas:
+- 3.9.* *netlib
+libcblas:
+- 3.9.* *netlib
 libxml2:
 - '2'
 lz4_c:
 - 1.9.3
 macos_machine:
-- arm64-apple-darwin20.0.0
+- x86_64-apple-darwin13.4.0
 numpy:
-- '1.23'
+- '1.25'
 openssl:
 - '3'
 pcre2:
@@ -51,9 +57,9 @@ pin_run_as_build:
     min_pin: x.x
     max_pin: x.x
 python:
-- 3.11.* *_cpython
+- 3.12.* *_cpython
 target_platform:
-- osx-arm64
+- osx-64
 tbb:
 - '2021'
 tbb_devel:
