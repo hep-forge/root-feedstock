@@ -10,16 +10,13 @@ python:
   - 3.10.* *_cpython
   - 3.11.* *_cpython
   - 3.12.* *_cpython
-  - 3.13.* *_cpython
 
 numpy:
   - 1.24
   - 1.25
   - 1.26
-  - 1.26
 
 is_python_min:
-  - true
   - true
   - true
   - true
