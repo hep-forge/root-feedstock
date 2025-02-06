@@ -11,12 +11,5 @@ python:
   - 3.11.* *_cpython
   - 3.12.* *_cpython
 
-numpy:
-  - 1.26
-  - 1.26
-  - 1.26
-
-is_python_min:
-  - true
-  - true
-  - true
+packages:
+  - numpy
