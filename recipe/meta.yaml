@@ -113,7 +113,7 @@ requirements:
     - vdt
     - libglu
     - xz
-    - graphviz
+    # - graphviz
     - pythia
     - xrootd
     - openssl
@@ -145,7 +145,7 @@ requirements:
     - nlohmann_json
     - xz
     - libglu
-    - graphviz
+#    - graphviz
     - xorg-libx11  # [linux]
     - xorg-libxext  # [linux]
     - xorg-libxpm  # [linux]
