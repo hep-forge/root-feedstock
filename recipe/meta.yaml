@@ -152,6 +152,8 @@ requirements:
     - xorg-libxft  # [linux]
     - xorg-xorgproto # [linux]
     - vdt
+    - tbb
+    - tbb-devel
 
 
 test:
