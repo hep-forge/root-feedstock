@@ -70,7 +70,7 @@ requirements:
     - {{ stdlib('c') }}
 
     - autoconf
-    - cmake
+    - cmake<=3.31
     - git
     - pkg-config
     - sed
@@ -161,6 +161,9 @@ requirements:
     - xorg-libxpm  # [linux]
     - xorg-libxft  # [linux]
     - xorg-xorgproto # [linux]
+    - vdt
+    - tbb
+    - tbb-devel
 
 
 test:
