@@ -1,6 +1,6 @@
 {% set versions = {
     "6.32.02": "332c763d2d5eb8a759893453637f24b3900476f73a1a4c7a205f8f7b3104f449",
-    "6.34.02": "1d55b4d529076c7fef64aad1698d30c4180780399c8d974c953255119fc3b966"
+    "6.34.08": "1d55b4d529076c7fef64aad1698d30c4180780399c8d974c953255119fc3b966"
 } %}
 
 {% set version = environ.get('COMMIT_VERSION', None) %}
@@ -13,12 +13,12 @@ package:
 
 {% set clang_versions = {
     "6.32.02": "16.0.6",
-    "6.34.02": "18.1.8"
+    "6.34.08": "18.1.8"
 } %}
 
 {% set clang_patches = {
     "6.32.02": "63202",
-    "6.34.02": "63402"
+    "6.34.08": "63402"
 } %}
 
 {% set clang_version = clang_versions.get(version) %}
