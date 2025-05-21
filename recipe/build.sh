@@ -21,6 +21,10 @@ CMAKE_PLATFORM_FLAGS+=("-DCLANG_DEFAULT_LINKER=${LD_GOLD}")
 CMAKE_PLATFORM_FLAGS+=("-DDEFAULT_SYSROOT=${INSTALL_SYSROOT}")
 CMAKE_PLATFORM_FLAGS+=("-DRT_LIBRARY=${INSTALL_SYSROOT}/usr/lib/librt.so")
 
+# Always set CLANG_RESOURCE_DIR_VERSION
+clang_version_split=(${clang_version//./ })
+CMAKE_PLATFORM_FLAGS+=("-DCLANG_RESOURCE_DIR_VERSION=${clang_version_split[0]}")
+
 # Fix finding X11 with CMake, copied from below with minor modifications
 # https://github.com/Kitware/CMake/blob/e59e17c1c7059b7d0f02d6b12bc3094a2afee778/Modules/FindX11.cmake
 cp "${RECIPE_DIR}/FindX11.cmake" "cmake/modules/"
