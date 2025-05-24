@@ -63,6 +63,14 @@ build:
     {% if builtin_clang %}- ROOT_CONDA_BUILTIN_CLANG=1 {%- endif %}
     {% if "ROOT_CONDA_BUILD_TYPE" in os.environ %}- ROOT_CONDA_BUILD_TYPE {%- endif %}
 
+  ignore_run_exports_from:
+    - xorg-libxft
+    - gsl
+    - zlib
+    - davix
+    - cfitsio
+    - tbb
+    
 requirements:
   build:
     - {{ compiler('c') }}
@@ -70,7 +78,7 @@ requirements:
     - {{ stdlib('c') }}
 
     - autoconf
-    - cmake<=3.31
+    - cmake
     - git
     - pkg-config
     - sed
@@ -101,7 +109,7 @@ requirements:
     - afterimage
     - lz4-c
     - xxhash
-    - cfitsio>=4
+    - cfitsio
     - gdk-pixbuf # [win]
     - giflib
     - freetype
@@ -111,14 +119,14 @@ requirements:
     - glew
     - gl2ps
     - glib
-    - gsl>=2.7
+    - gsl
     - nlohmann_json
     - pcre2
     - fftw
-    - zlib>=1.2
+    - zlib
     - zlib-ng
     - zstd
-    - tbb >=2021
+    - tbb
     - tbb-devel
     - vector-classes
     - vdt
@@ -128,7 +136,7 @@ requirements:
     - pythia
     - xrootd
     - openssl
-    - davix>=0.6.4
+    - davix
     - xorg-libx11  # [linux]
     - xorg-libxau  # [linux]
     - xorg-libxcursor  # [linux]
@@ -147,9 +155,9 @@ requirements:
 {% if builtin_pyroot %}
     - python
 {% endif %}
-    - gsl>=2.7
-    - cfitsio>=4
-    -
+    - gsl
+    - cfitsio
+    - tbb
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
     - {{ stdlib('c') }}
@@ -166,11 +174,8 @@ requirements:
     - xorg-libxft  # [linux]
     - xorg-xorgproto # [linux]
     - vdt
-    - tbb>=2021
-    - tbb-devel
-    - davix>=0.6.4
-    - zlib>=1.2
-
+    - davix
+    - zlib
 
 test:
   files:
