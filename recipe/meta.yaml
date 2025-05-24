@@ -12,7 +12,7 @@ package:
   version: {{ environ.get('ANACONDA_VERSION', version)|replace("-", ".") }}
 
 {% set gnu_versions = {
-    "6.32.02": "<=13.*"
+    "6.32.02": "<=14"
 } %}
 
 {% set clang_versions = {
