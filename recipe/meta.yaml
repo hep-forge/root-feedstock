@@ -12,7 +12,7 @@ package:
   version: {{ environ.get('ANACONDA_VERSION', version)|replace("-", ".") }}
 
 {% set gnu_versions = {
-    "6.32.02": "13.*"
+    "6.32.02": "<=13.*"
 } %}
 
 {% set clang_versions = {
@@ -82,12 +82,12 @@ build:
 requirements:
   build:
     {% if gnu_versions.get(version, None) %}
-    - {{ compiler('c') }}<={{ gnu_versions.get(version) }}
-    - {{ compiler('cxx') }}<={{ gnu_versions.get(version) }}
-    - {{ stdlib('c') }}<={{ gnu_versions.get(version) }}
+    - {{ compiler('c') }}{{ gnu_versions.get(version) }} # [linux]
+    - {{ compiler('cxx') }}{{ gnu_versions.get(version) }} # [linux]
+    - {{ stdlib('c') }}{{ gnu_versions.get(version) }}
     {% else %}
-    - {{ compiler('c') }}
-    - {{ compiler('cxx') }}
+    - {{ compiler('c') }} # [linux]
+    - {{ compiler('cxx') }} # [linux]
     - {{ stdlib('c') }}
     {% endif %}
 
@@ -108,9 +108,9 @@ requirements:
 
   host:
     {% if gnu_versions.get(version, None) %}
-    - {{ compiler('c') }}<={{ gnu_versions.get(version) }} # [linux]
-    - {{ compiler('cxx') }}<={{ gnu_versions.get(version) }} # [linux]
-    - {{ stdlib('c') }}<={{ gnu_versions.get(version) }}
+    - {{ compiler('c') }}{{ gnu_versions.get(version) }} # [linux]
+    - {{ compiler('cxx') }}{{ gnu_versions.get(version) }} # [linux]
+    - {{ stdlib('c') }}{{ gnu_versions.get(version) }}
     {% else %}
     - {{ compiler('c') }} # [linux]
     - {{ compiler('cxx') }} # [linux]
@@ -177,9 +177,9 @@ requirements:
     - python
 {% endif %}
     {% if gnu_versions.get(version, None) %}
-    - {{ compiler('c') }}<={{ gnu_versions.get(version) }} # [linux]
-    - {{ compiler('cxx') }}<={{ gnu_versions.get(version) }} # [linux]
-    - {{ stdlib('c') }}<={{ gnu_versions.get(version) }}
+    - {{ compiler('c') }}{{ gnu_versions.get(version) }} # [linux]
+    - {{ compiler('cxx') }}{{ gnu_versions.get(version) }} # [linux]
+    - {{ stdlib('c') }}{{ gnu_versions.get(version) }}
     {% else %}
     - {{ compiler('c') }} # [linux]
     - {{ compiler('cxx') }} # [linux]
