@@ -56,7 +56,12 @@ build:
     - etc/allDict.cxx.pch  # [aarch64]
   ignore_run_exports_from:
     - clangdev
-    - xorg-*
+    - xorg-libx11
+    - xorg-libxft
+    - xorg-libxext
+    - xorg-libxpm
+    - xorg-libxrender
+    - xorg-libxt
     - gsl
     - zlib
     - davix
