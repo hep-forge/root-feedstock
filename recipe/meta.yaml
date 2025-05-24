@@ -101,7 +101,7 @@ requirements:
     - afterimage
     - lz4-c
     - xxhash
-    - cfitsio
+    - cfitsio>=4
     - gdk-pixbuf # [win]
     - giflib
     - freetype
@@ -111,14 +111,14 @@ requirements:
     - glew
     - gl2ps
     - glib
-    - gsl
+    - gsl>=2.7
     - nlohmann_json
     - pcre2
     - fftw
-    - zlib
+    - zlib>=1.2
     - zlib-ng
     - zstd
-    - tbb
+    - tbb >=2021
     - tbb-devel
     - vector-classes
     - vdt
@@ -147,6 +147,9 @@ requirements:
 {% if builtin_pyroot %}
     - python
 {% endif %}
+    - gsl>=2.7
+    - cfitsio>=4
+    -
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
     - {{ stdlib('c') }}
@@ -163,9 +166,10 @@ requirements:
     - xorg-libxft  # [linux]
     - xorg-xorgproto # [linux]
     - vdt
-    - tbb
+    - tbb>=2021
     - tbb-devel
     - davix>=0.6.4
+    - zlib>=1.2
 
 
 test:
