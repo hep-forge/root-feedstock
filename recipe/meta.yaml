@@ -81,15 +81,9 @@ build:
 
 requirements:
   build:
-    {% if gnu_versions.get(version, None) %}
-    - {{ compiler('c') }}{{ gnu_versions.get(version) }} # [linux]
-    - {{ compiler('cxx') }}{{ gnu_versions.get(version) }} # [linux]
-    - {{ stdlib('c') }}{{ gnu_versions.get(version) }}
-    {% else %}
-    - {{ compiler('c') }} # [linux]
-    - {{ compiler('cxx') }} # [linux]
+    - {{ compiler('c') }}{{ gnu_versions.get(version, "") }} # [linux]
+    - {{ compiler('cxx') }}{{ gnu_versions.get(version, "") }} # [linux]
     - {{ stdlib('c') }}
-    {% endif %}
 
     - autoconf
     - cmake<=3.31
@@ -107,15 +101,9 @@ requirements:
     - {{ cdt('libxxf86vm') }}  # [linux]
 
   host:
-    {% if gnu_versions.get(version, None) %}
-    - {{ compiler('c') }}{{ gnu_versions.get(version) }} # [linux]
-    - {{ compiler('cxx') }}{{ gnu_versions.get(version) }} # [linux]
-    - {{ stdlib('c') }}{{ gnu_versions.get(version) }}
-    {% else %}
-    - {{ compiler('c') }} # [linux]
-    - {{ compiler('cxx') }} # [linux]
+    - {{ compiler('c') }}{{ gnu_versions.get(version, "") }} # [linux]
+    - {{ compiler('cxx') }}{{ gnu_versions.get(version, "") }} # [linux]
     - {{ stdlib('c') }}
-    {% endif %}
 
     - libblas
     - libcblas
@@ -176,15 +164,9 @@ requirements:
 {% if builtin_pyroot %}
     - python
 {% endif %}
-    {% if gnu_versions.get(version, None) %}
-    - {{ compiler('c') }}{{ gnu_versions.get(version) }} # [linux]
-    - {{ compiler('cxx') }}{{ gnu_versions.get(version) }} # [linux]
-    - {{ stdlib('c') }}{{ gnu_versions.get(version) }}
-    {% else %}
-    - {{ compiler('c') }} # [linux]
-    - {{ compiler('cxx') }} # [linux]
+    - {{ compiler('c') }}{{ gnu_versions.get(version, "") }} # [linux]
+    - {{ compiler('cxx') }}{{ gnu_versions.get(version, "") }} # [linux]
     - {{ stdlib('c') }}
-    {% endif %}
 
     - libstdcxx-ng
     - libcxx
