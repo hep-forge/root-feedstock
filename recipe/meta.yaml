@@ -27,6 +27,7 @@ package:
 
 {% set clang_version = clang_versions.get(version) %}
 {% set clang_patches_version = "root_"+(clang_patches.get(version)) %}
+{% set std_rt_pin    = pin_compatible('libstdcxx-ng', max_pin='x') %}
 
 {% set builtin_pyroot = True %}
 {% set builtin_clang = False %}
@@ -107,7 +108,7 @@ requirements:
 
     - libblas
     - libcblas
-    - libstdcxx-ng
+    - libstdcxx-ng {{ std_rt_pin }}
     - libcxx
     - binutils
     - openmp
@@ -168,7 +169,7 @@ requirements:
     - {{ compiler('cxx') }}{{ gnu_versions.get(version, "") }} # [linux]
     - {{ stdlib('c') }}
 
-    - libstdcxx-ng
+    - libstdcxx-ng {{ std_rt_pin }}
     - libcxx
     - xxhash
     - nlohmann_json
