@@ -167,8 +167,8 @@ requirements:
 {% if builtin_pyroot %}
     - python
 {% endif %}
-    - {{ compiler('c') }}{{ gnu_versions.get(version, "") }} # [linux]
-    - {{ compiler('cxx') }}{{ gnu_versions.get(version, "") }} # [linux]
+    - {{ compiler('c') }}{{ gnu_pin }} # [linux]
+    - {{ compiler('cxx') }}{{ gnu_pin }} # [linux]
     - {{ stdlib('c') }}
 
     - libstdcxx-ng{{ gnu_pin }}
