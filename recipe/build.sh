@@ -227,13 +227,6 @@ fi
 
 cmake .. $CMAKE_ARGS "${CMAKE_PLATFORM_FLAGS[@]}"
 
-# keep *_rdict.pcm, drop Clang modules
-# rm -f "$PREFIX/lib/std.pcm" "$PREFIX/lib/libc.pcm" \
-#       "$PREFIX/lib"/_Builtin_*.pcm "$PREFIX/lib"/Cling_Runtime*.pcm \
-#       "$PREFIX/lib/Core.pcm" "$PREFIX/lib/RIO.pcm" "$PREFIX/lib/Rint.pcm" \
-#       "$PREFIX/lib/MathCore.pcm" "$PREFIX/lib/Hist.pcm" \
-#       "$PREFIX/lib/ROOTGraphicsPrimitives.pcm"
-
 set +e
 make -j$(nproc)
 ret=$?
