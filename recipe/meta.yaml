@@ -15,7 +15,8 @@ package:
     "6.32.02": "14",
     "6.34.08": "15"
 } %}
-{% set gnu_pin = gnu_versions.get(version, "") + ".*" %}
+{% set _gnu_major = gnu_versions.get(version, "") %}
+{% set gnu_pin = (" " + _gnu_major + ".*") if _gnu_major else "" %}
 
 {% set clang_versions = {
     "6.32.02": "16.0.6",
@@ -83,8 +84,8 @@ build:
 
 requirements:
   build:
-    - {{ compiler('c') }}{{ gnu_versions.get(version, "") }} # [linux]
-    - {{ compiler('cxx') }}{{ gnu_versions.get(version, "") }} # [linux]
+    - {{ compiler('c') }}{{ gnu_pin }} # [linux]
+    - {{ compiler('cxx') }}{{ gnu_pin }} # [linux]
     - {{ stdlib('c') }}
 
     - autoconf
@@ -109,7 +110,7 @@ requirements:
 
     - libblas
     - libcblas
-    - libstdcxx-ng {{ gnu_pin }}
+    - libstdcxx-ng{{ gnu_pin }}
     - libcxx
     - binutils
     - openmp
@@ -170,7 +171,7 @@ requirements:
     - {{ compiler('cxx') }}{{ gnu_versions.get(version, "") }} # [linux]
     - {{ stdlib('c') }}
 
-    - libstdcxx-ng {{ gnu_pin }}
+    - libstdcxx-ng{{ gnu_pin }}
     - libcxx
     - xxhash
     - nlohmann_json
