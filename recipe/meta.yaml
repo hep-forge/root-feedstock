@@ -58,6 +58,8 @@ source:
 {% endif %}
 
 build:
+  run_exports:
+    - {{ pin_compatible('root', max_pin='x.x') }}
   ignore_prefix_files:
     - lib/*.pcm            # [not aarch64]
     - etc/allDict.cxx.pch  # [aarch64]
@@ -167,12 +169,11 @@ requirements:
 {% if builtin_pyroot %}
     - python
 {% endif %}
-    - {{ compiler('c') }}{{ gnu_pin }} # [linux]
-    - {{ compiler('cxx') }}{{ gnu_pin }} # [linux]
-    - {{ stdlib('c') }}
-
+    # - {{ compiler('c') }}{{ gnu_pin }} # [linux]
+    # - {{ compiler('cxx') }}{{ gnu_pin }} # [linux]
+    # - {{ stdlib('c') }}
     - libstdcxx-ng{{ gnu_pin }}
-    - libcxx
+    # - libcxx{{ gnu_pin }}
     - xxhash
     - nlohmann_json
     - xz
@@ -185,7 +186,6 @@ requirements:
     - xorg-xorgproto # [linux]
     - vdt
     - tbb
-    - tbb-devel
     - davix>=0.6.4
 
 
