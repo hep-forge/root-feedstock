@@ -36,7 +36,7 @@ build:
   {% endif %}
 
 {% set gcc_version = extras.get('gcc', '') %}
-{% set gnu_pin = " " + gcc_version + ".*" %}
+{% set gnu_pin = " " + gcc_version + ".*" if gcc_version else '' %}
 
 {% set clang_versions = {
     "6.32.02": "16.0.6",
@@ -129,11 +129,11 @@ requirements:
     - {{ compiler('c') }}{{ gnu_pin }} # [linux]
     - {{ compiler('cxx') }}{{ gnu_pin }} # [linux]
     - {{ stdlib('c') }}
+    - libstdcxx-ng{{ gnu_pin }}
+    - libcxx{{ gnu_pin }}
 
     - libblas
     - libcblas
-    - libstdcxx-ng{{ gnu_pin }}
-    - libcxx
     - binutils
     - openmp
 {% if builtin_pyroot %}
