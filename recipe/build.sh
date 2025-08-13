@@ -14,9 +14,6 @@ else
     echo "Disabling sccache as it is not available"
 fi
 
-pwd
-ls -ls 
-
 # rebuild afterimage ./configure script after patch
 cp $BUILD_PREFIX/share/gnuconfig/config.* graf2d/asimage/src/libAfterImage
 (cd graf2d/asimage/src/libAfterImage; autoconf)
@@ -434,6 +431,7 @@ if [[ "${target_platform}" != osx* ]]; then
 fi
 
 # Now we can actually run CMake
+echo "--- cmake $CMAKE_ARGS \${CMAKE_PLATFORM_FLAGS[@]}\" ${SRC_DIR}---"
 cmake $CMAKE_ARGS "${CMAKE_PLATFORM_FLAGS[@]}" ${SRC_DIR}
 set +e
 
