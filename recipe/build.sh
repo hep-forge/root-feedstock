@@ -7,8 +7,6 @@ cd build-scripts
 cmake $RECIPE_DIR/scripts
 cd ..
 
-echo $ROOT_CXX_STANDARD
-exit 1
 if command -v sccache &> /dev/null; then
     export CMAKE_C_COMPILER_LAUNCHER=sccache
     export CMAKE_CXX_COMPILER_LAUNCHER=sccache
@@ -433,7 +431,6 @@ if [[ "${target_platform}" != osx* ]]; then
 fi
 
 # Now we can actually run CMake
-echo "--- cmake $CMAKE_ARGS \${CMAKE_PLATFORM_FLAGS[@]}\" ${SRC_DIR}---"
 cmake $CMAKE_ARGS "${CMAKE_PLATFORM_FLAGS[@]}" ${SRC_DIR}
 set +e
 
