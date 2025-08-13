@@ -4,15 +4,15 @@
 } %}
 
 {% set commit_version = environ.get('COMMIT_VERSION', versions.keys()|first)|string %}
-{% set parts = commit_version.split('-') %}
+{% set parts = commit_version.split('_') %}
 {% set version = parts[0] %}
-{% set extras = {} %}
+{% set extras = namespace(versions={}) %}
 {% for suffix in parts[1:] %}
   {% set m = suffix | regex_search('^([a-zA-Z]+)([0-9\\.]+)$') %}
   {% if m %}
     {% set prefix = m.group(1) %}
     {% set ver = m.group(2) %}
-    {% do extras.update({prefix: ver}) %}
+    {% set _ = extras.versions.update({prefix: ver}) %}
   {% endif %}
 {% endfor %}
 
@@ -23,7 +23,7 @@ package:
 build:
   number: 0
   {% if "gcc" in extras %}
-  string: "gcc{{ extras["gcc"].replace('.', '') }}"
+  string: "gcc{{ extras.versions["gcc"].replace('.', '') }}"
   {% endif %}
 
 {% set gcc_version = extras.get('gcc', '') %}
