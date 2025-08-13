@@ -193,8 +193,8 @@ requirements:
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
     - {{ stdlib("c") }}
-    - {{ pin_compatible('xxhash', upper_bound='x.x.x') }}
-    - {{ pin_compatible('nlohmann_json', upper_bound='x.x.x') }}
+    - xxhash
+    - nlohmann_json
     - cffi
     - graphviz
 {% if linux %}
