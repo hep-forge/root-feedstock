@@ -100,9 +100,7 @@ requirements:
     # Required for OpenGL support
     # See https://conda-forge.org/docs/maintainer/knowledge_base.html?highlight=cdt#libgl
     - libgl-devel  # [linux]
-    - libx11-devel # [linux]
-    - xorg-libxext # [linux]
-    - xorg-libx11  # [linux]
+    - libopengl-devel # [linux]
     
   host:
     - {{ compiler('c') }}{{gnu_pin}} # [linux]
