@@ -8,6 +8,9 @@ else
     echo "Disabling sccache as it is not available"
 fi
 
+pwd
+ls -ls 
+
 # rebuild afterimage ./configure script after patch
 cp $BUILD_PREFIX/share/gnuconfig/config.* root-source/graf2d/asimage/src/libAfterImage
 (cd root-source/graf2d/asimage/src/libAfterImage; autoconf)
