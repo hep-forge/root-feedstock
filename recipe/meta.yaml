@@ -86,8 +86,8 @@ build:
 
 requirements:
   build:
-    - {{ compiler('c') }}{{ gnu_pin }} # [linux]
-    - {{ compiler('cxx') }}{{ gnu_pin }} # [linux]
+    - {{ compiler('c') }} # [linux]
+    - {{ compiler('cxx') }} # [linux]
     - {{ stdlib('c') }}
 
     - autoconf
@@ -106,13 +106,13 @@ requirements:
     - {{ cdt('libxxf86vm') }}  # [linux]
 
   host:
-    - {{ compiler('c') }}{{ gnu_pin }} # [linux]
-    - {{ compiler('cxx') }}{{ gnu_pin }} # [linux]
+    - {{ compiler('c') }} # [linux]
+    - {{ compiler('cxx') }} # [linux]
     - {{ stdlib('c') }}
 
     - libblas
     - libcblas
-    - libstdcxx-ng{{ gnu_pin }}
+    - libstdcxx-ng
     - libcxx
     - binutils
     - openmp
@@ -169,11 +169,11 @@ requirements:
 {% if builtin_pyroot %}
     - python
 {% endif %}
-    # - {{ compiler('c') }}{{ gnu_pin }} # [linux]
-    # - {{ compiler('cxx') }}{{ gnu_pin }} # [linux]
-    # - {{ stdlib('c') }}
-    - libstdcxx-ng{{ gnu_pin }}
-    # - libcxx{{ gnu_pin }}
+    - {{ compiler('c') }} # [linux]
+    - {{ compiler('cxx') }} # [linux]
+    - {{ stdlib('c') }}
+    - libstdcxx-ng
+    - libcxx{{ gnu_pin }}
     - xxhash
     - nlohmann_json
     - xz
