@@ -65,6 +65,8 @@ source:
 {% endif %}
 
 build:
+  script_env:
+    - ROOT_CXX_STANDARD={{ root_cxx_standard.get(version) }}
   run_exports:
     - {{ pin_compatible('root', max_pin='x.x') }}
   ignore_prefix_files:
@@ -87,7 +89,6 @@ build:
 script_env:
   - clang_version={{ clang_version }}
   - clang_patches_version={{ clang_patches_version }}
-  - ROOT_CXX_STANDARD={{ root_cxx_standard.get(version) }}
   {% if builtin_pyroot %}- ROOT_CONDA_BUILTIN_PYROOT=1 {%- endif %}
   {% if builtin_clang %}- ROOT_CONDA_BUILTIN_CLANG=1 {%- endif %}
   {% if "ROOT_CONDA_BUILD_TYPE" in os.environ %}- ROOT_CONDA_BUILD_TYPE {%- endif %}
