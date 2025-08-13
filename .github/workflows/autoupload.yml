@@ -119,10 +119,13 @@ jobs:
       - name: Install Forge & Tools
         run: |
           /usr/share/miniconda/bin/conda install -c conda-forge -y conda-smithy conda-verify conda-package-handling anaconda-client
+          /usr/share/miniconda/bin/conda config --set channel_priority strict
           /usr/share/miniconda/bin/conda config --add channels defaults
           /usr/share/miniconda/bin/conda config --add channels conda-forge
+          /usr/share/miniconda/bin/conda config --add channels nvidia
+          /usr/share/miniconda/bin/conda config --add channels torch
           /usr/share/miniconda/bin/conda config --add channels hep-forge
-          
+
       - name: Build Package
         env:
           COMMIT_LATEST_TAG: ${{needs.env.outputs.COMMIT_LATEST_TAG}}
