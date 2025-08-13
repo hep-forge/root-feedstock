@@ -25,7 +25,7 @@ package:
 
 {% set clang_patches = {
     "6.32.02": "63202",
-    "6.34.08": "63402"
+    "6.34.08": "63406"
 } %}
 
 {% set clang_version = clang_versions.get(version) %}
@@ -109,9 +109,9 @@ requirements:
     - freetype
     - liblzma-devel
 {% if not osx %}
-    - llvm {{ clang_version }}.* {{ clang_patches_version }}*
+    - llvm {{ clang_version }}.* #{{ clang_patches_version }}*
     - llvm-openmp {{ clang_version }}.*
-    - llvmdev {{ clang_version }}.* {{ clang_patches_version }}*
+    - llvmdev {{ clang_version }}.* #{{ clang_patches_version }}*
     - clangdev {{ clang_version }}.* {{ clang_patches_version }}*
 {% endif %}
 {% endif %}
@@ -169,9 +169,9 @@ requirements:
     - zlib
     - zstd
 {% if not (osx and arch == 'arm64') %}
-    - llvm {{ clang_version }}.* {{ clang_patches_version }}*
+    - llvm {{ clang_version }}.* #{{ clang_patches_version }}*
     - llvm-openmp {{ clang_version }}.*
-    - llvmdev {{ clang_version }}.* {{ clang_patches_version }}*
+    - llvmdev {{ clang_version }}.* #{{ clang_patches_version }}*
     - clangdev {{ clang_version }}.* {{ clang_patches_version }}*
 {% endif %}
 
