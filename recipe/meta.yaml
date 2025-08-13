@@ -3,40 +3,20 @@
     "6.34.08": "1ee4ed1a5acc661def41a033a91e8775b2a8f3841cb9b8502988bb23d2bc5d7a"
 } %}
 
-{% set commit_version = environ.get('COMMIT_VERSION', versions.keys()|first)|string %}
-{% set parts = commit_version.split('_') %}
-{% set version = parts[0] %}
-
-{% set extras_list = [] %}
-{% for suffix in parts[1:] %}
-  {# extract prefix and ver using safe methods #}
-  {% set prefix = '' %}
-  {% set ver = '' %}
-  {% for c in suffix %}
-    {% if c.isalpha() and ver == '' %}
-      {% set prefix = prefix + c %}
-    {% else %}
-      {% set ver = ver + c %}
-    {% endif %}
-  {% endfor %}
-  {% set extras_list = extras_list + [(prefix, ver)] %}
-{% endfor %}
-
-{# convert list of tuples to dict #}
-{% set extras = dict(extras_list) %}
+{% set version = environ.get('COMMIT_VERSION', None) %}
+{% set version = version or versions.keys()|first %}
+{% set version = version|string %}
 
 package:
   name: {{ environ.get('ANACONDA_PACKAGE', "root")|string|lower }}
   version: {{ environ.get('ANACONDA_VERSION', version)|replace("-", ".") }}
 
-build:
-  number: 0
-  {% if "gcc" in extras %}
-  string: "gcc{{ extras["gcc"].replace('.', '') }}"
-  {% endif %}
-
-{% set gcc_version = extras.get('gcc', '') %}
-{% set gnu_pin = " " + gcc_version + ".*" if gcc_version else '' %}
+{% set gnu_versions = {
+    "6.32.02": "14",
+    "6.34.08": "15"
+} %}
+{% set _gnu_major = gnu_versions.get(version, "") %}
+{% set gnu_pin = (" " + _gnu_major + ".*") if _gnu_major else "" %}
 
 {% set clang_versions = {
     "6.32.02": "16.0.6",
@@ -129,11 +109,11 @@ requirements:
     - {{ compiler('c') }}{{ gnu_pin }} # [linux]
     - {{ compiler('cxx') }}{{ gnu_pin }} # [linux]
     - {{ stdlib('c') }}
-    - libstdcxx-ng{{ gnu_pin }}
-    - libcxx{{ gnu_pin }}
 
     - libblas
     - libcblas
+    - libstdcxx-ng{{ gnu_pin }}
+    - libcxx
     - binutils
     - openmp
 {% if builtin_pyroot %}
@@ -194,122 +174,6 @@ requirements:
     # - {{ stdlib('c') }}
     - libstdcxx-ng{{ gnu_pin }}
     # - libcxx{{ gnu_pin }}
-    - xxhash
-    - nlohmann_json
-    - xz
-    - libglu
-    - graphviz
-    - xorg-libx11  # [linux]
-    - xorg-libxext  # [linux]
-    - xorg-libxpm  # [linux]
-    - xorg-libxft  # [linux]
-    - xorg-xorgproto # [linux]
-    - vdt
-    - tbb
-    - davix>=0.6.4
-
-
-    - {{ compiler('c') }} # [linux]
-    - {{ compiler('cxx') }} # [linux]
-    - {{ stdlib('c') }}
-
-    - autoconf
-    - cmake<=3.31
-    - git
-    - pkg-config
-    - sed
-    - make
-
-    # Required for OpenGL support
-    # See https://conda-forge.org/docs/maintainer/knowledge_base.html?highlight=cdt#libgl
-    - {{ cdt('mesa-libgl-devel') }}  # [linux]
-    - {{ cdt('mesa-dri-drivers') }}  # [linux]
-    - {{ cdt('libselinux') }}  # [linux]
-    - {{ cdt('libxdamage') }}  # [linux]
-    - {{ cdt('libxxf86vm') }}  # [linux]
-
-  host:
-    - {{ compiler('c') }} # [linux]
-    - {{ compiler('cxx') }} # [linux]
-    - {{ stdlib('c') }}
-
-    {% if gcc_version %}
-    - libgcc-ng {{ gcc_version }}.*
-    - libstdcxx-ng {{ gcc_version }}.*
-    {% else %}
-    - libgcc-ng
-    - libstdcxx-ng
-    {% endif %}
-    
-    - libblas
-    - libcblas
-    - libcxx
-    - binutils
-    - openmp
-{% if builtin_pyroot %}
-    - python
-    - numpy
-{% endif %}
-    - afterimage
-    - lz4-c
-    - xxhash
-    - cfitsio
-    - gdk-pixbuf # [win]
-    - giflib
-    - freetype
-    - gtest
-    - libxml2
-    - ftgl
-    - glew
-    - gl2ps
-    - glib
-    - gsl
-    - nlohmann_json
-    - pcre2
-    - fftw
-    - zlib
-    - zlib-ng
-    - zstd
-    - tbb
-    - tbb-devel
-    - vector-classes
-    - vdt
-    - libglu
-    - xz
-    - graphviz
-    - pythia
-    - xrootd
-    - openssl
-    - davix>=0.6.4
-    - xorg-libx11  # [linux]
-    - xorg-libxau  # [linux]
-    - xorg-libxcursor  # [linux]
-    - xorg-libxext  # [linux]
-    - xorg-libxfixes  # [linux]
-    - xorg-libxft  # [linux]
-    - xorg-libxpm  # [linux]
-    - xorg-xorgproto # [linux]
-{% if not builtin_clang %}
-    - llvm {{ clang_version }}  # [not (osx and arm64)]
-    - llvmdev {{ clang_version }}  # [not (osx and arm64)]
-    - clangdev {{ clang_version }} {{ clang_patches_version }}*  # [not (osx and arm64)]
-{% endif %}
-
-  run:
-{% if builtin_pyroot %}
-    - python
-{% endif %}
-    - {{ compiler('c') }} # [linux]
-    - {{ compiler('cxx') }} # [linux]
-    - {{ stdlib('c') }}
-    {% if gcc_version %}
-    - libgcc-ng {{ gcc_version }}.*
-    - libstdcxx-ng {{ gcc_version }}.*
-    {% else %}
-    - libgcc-ng
-    - libstdcxx-ng
-    {% endif %}
-    
     - xxhash
     - nlohmann_json
     - xz
