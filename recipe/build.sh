@@ -1,12 +1,6 @@
 #!/bin/bash
 set -x
 
-mkdir build-scripts
-cd build-scripts
-
-cmake $RECIPE_DIR/scripts
-cd ..
-
 if command -v sccache &> /dev/null; then
     export CMAKE_C_COMPILER_LAUNCHER=sccache
     export CMAKE_CXX_COMPILER_LAUNCHER=sccache
