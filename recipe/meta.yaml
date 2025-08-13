@@ -8,12 +8,9 @@
 {% set version = parts[0] %}
 {% set extras = namespace(versions={}) %}
 {% for suffix in parts[1:] %}
-  {% set m = suffix | regex_search('^([a-zA-Z]+)([0-9\\.]+)$') %}
-  {% if m %}
-    {% set prefix = m.group(1) %}
-    {% set ver = m.group(2) %}
-    {% set _ = extras.versions.update({prefix: ver}) %}
-  {% endif %}
+  {% set prefix = suffix | regex_replace('[^a-zA-Z].*', '') %}
+  {% set ver = suffix[len(prefix):] %}
+  {% do extras.update({prefix: ver}) %}
 {% endfor %}
 
 package:
