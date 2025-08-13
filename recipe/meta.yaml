@@ -11,12 +11,12 @@ package:
   name: {{ environ.get('ANACONDA_PACKAGE', "root")|string|lower }}
   version: {{ environ.get('ANACONDA_VERSION', version)|replace("-", ".") }}
 
-{% set gnu_versions = {
-    "6.32.02": "14",
-    "6.34.08": "15"
-} %}
-{% set _gnu_major = gnu_versions.get(version, "") %}
-{% set gnu_pin = (" " + _gnu_major + ".*") if _gnu_major else "" %}
+# {% set gnu_versions = {
+#     "6.32.02": "15",
+#     "6.34.08": "15"
+# } %}
+# {% set _gnu_major = gnu_versions.get(version, "") %}
+# {% set gnu_pin = (" " + _gnu_major + ".*") if _gnu_major else "" %}
 
 {% set clang_versions = {
     "6.32.02": "16.0.6",
@@ -86,8 +86,8 @@ build:
 
 requirements:
   build:
-    - {{ compiler('c') }}{{ gnu_pin }} # [linux]
-    - {{ compiler('cxx') }}{{ gnu_pin }} # [linux]
+    - {{ compiler('c') }} # [linux]
+    - {{ compiler('cxx') }} # [linux]
     - {{ stdlib('c') }}
 
     - autoconf
@@ -106,13 +106,12 @@ requirements:
     - {{ cdt('libxxf86vm') }}  # [linux]
 
   host:
-    - {{ compiler('c') }}{{ gnu_pin }} # [linux]
-    - {{ compiler('cxx') }}{{ gnu_pin }} # [linux]
+    - {{ compiler('c') }} # [linux]
+    - {{ compiler('cxx') }} # [linux]
     - {{ stdlib('c') }}
 
     - libblas
     - libcblas
-    - libstdcxx-ng{{ gnu_pin }}
     - libcxx
     - binutils
     - openmp
@@ -169,11 +168,10 @@ requirements:
 {% if builtin_pyroot %}
     - python
 {% endif %}
-    # - {{ compiler('c') }}{{ gnu_pin }} # [linux]
-    # - {{ compiler('cxx') }}{{ gnu_pin }} # [linux]
-    # - {{ stdlib('c') }}
-    - libstdcxx-ng{{ gnu_pin }}
-    # - libcxx{{ gnu_pin }}
+    - {{ compiler('c') }} # [linux]
+    - {{ compiler('cxx') }} # [linux]
+    - {{ stdlib('c') }}
+    - libstdcxx-ng
     - xxhash
     - nlohmann_json
     - xz
