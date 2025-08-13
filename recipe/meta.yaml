@@ -35,21 +35,21 @@ package:
 {% set builtin_clang = False %}
 
 source:
-  url: "https://github.com/root-project/root/archive/refs/tags/v{{ version|replace(".", "-") }}.tar.gz"
-  {% if versions.get(version, None) %}
+  url: "https://github.com/root-project/root/archive/refs/tags/v{{ version|replace('.', '-') }}.tar.gz"
+  {% if versions.get(version) %}
   sha256: {{ versions.get(version) }}
   {% endif %}
   patches:
     - patches/root-x.xx.xx_cling-runtime-sysroot.patch
-    - patches/root-x.xx.xx-osx-remove-hardcoded-sysroot.patch  # [osx]
+    - patches/root-x.xx.xx-osx-remove-hardcoded-sysroot.patch
     - patches/0001-Hacks.patch
     - patches/0001-Patch-for-apple-silicon.patch
     - patches/0001-Set-LLVM_REQUIRES_EH-for-Cling.patch
-    - patches/disable-hsimple.root  # [build_platform != target_platform]
-    - patches/0001-force-one-modulemap-for-darwin.patch  # [osx]
-    - patches/0001-Remove-check-for-SDK-version-in-CIFactory.patch  # [osx]
-    - patches/0001-avoid-linking-TPython-against-libPython.patch  # [osx]
-    - patches/0001-std_darwin.modulemap-Remove-headers-for-MacOSX15.0.s.patch  # [osx]
+    - patches/disable-hsimple.root
+    - patches/0001-force-one-modulemap-for-darwin.patch
+    - patches/0001-Remove-check-for-SDK-version-in-CIFactory.patch
+    - patches/0001-avoid-linking-TPython-against-libPython.patch
+    - patches/0001-std_darwin.modulemap-Remove-headers-for-MacOSX15.0.s.patch
     - patches/0001-Hackily-fix-cross-compilation.patch
     - patches/0001-veccore-jobserver-issue.patch
 {% if version < "6.34" %}
@@ -61,8 +61,8 @@ build:
   run_exports:
     - {{ pin_compatible('root', max_pin='x.x') }}
   ignore_prefix_files:
-    - lib/*.pcm            # [not aarch64]
-    - etc/allDict.cxx.pch  # [aarch64]
+    - lib/*.pcm
+    - etc/allDict.cxx.pch
   ignore_run_exports_from:
     - clangdev
     - xorg-libx11
@@ -76,7 +76,7 @@ build:
     - davix
     - cfitsio
     - tbb
-    
+
 script_env:
   - clang_version={{ clang_version }}
   - clang_patches_version={{ clang_patches_version }}
@@ -86,8 +86,8 @@ script_env:
 
 requirements:
   build:
-    - {{ compiler('c') }}
-    - {{ compiler('cxx') }}
+    - {{ compiler('c') }}{{ gnu_pin }}
+    - {{ compiler('cxx') }}{{ gnu_pin }}
     - {{ stdlib("c") }}
     - autoconf
     - cmake
@@ -96,41 +96,43 @@ requirements:
     - sed
     - make
     - ninja
-    - if: unix
-      then: gnuconfig
-    - if: build_platform != target_platform
-      then:
-        - cross-python_{{ target_platform }}
-        - python
-        - numpy
-        - xxhash
-        - zlib
-        - zstd
-        - freetype
-        - liblzma-devel
-        - if: not osx
-          then:
-            - llvm {{ clang_version }}.* {{ clang_patches_version }}*
-            - llvm-openmp {{ clang_version }}.*
-            - llvmdev {{ clang_version }}.* {{ clang_patches_version }}*
-            - clangdev {{ clang_version }}.* {{ clang_patches_version }}*
+{% if linux or osx %}
+    - gnuconfig
+{% endif %}
+{% if build_platform != target_platform %}
+    - cross-python_{{ target_platform }}
+    - python
+    - numpy
+    - xxhash
+    - zlib
+    - zstd
+    - freetype
+    - liblzma-devel
+{% if not osx %}
+    - llvm {{ clang_version }}.* {{ clang_patches_version }}*
+    - llvm-openmp {{ clang_version }}.*
+    - llvmdev {{ clang_version }}.* {{ clang_patches_version }}*
+    - clangdev {{ clang_version }}.* {{ clang_patches_version }}*
+{% endif %}
+{% endif %}
+
   host:
     - libblas
     - libcblas
-    - if: linux
-      then:
-        - {{ compiler('c') }}
-        - {{ compiler('cxx') }}
-        - libglu
-        - libgl-devel
-        - xorg-xorgproto
-        - xorg-libx11
-        - xorg-libxau
-        - xorg-libxcursor
-        - xorg-libxext
-        - xorg-libxfixes
-        - xorg-libxft
-        - xorg-libxpm
+{% if linux %}
+    - {{ compiler('c') }}
+    - {{ compiler('cxx') }}
+    - libglu
+    - libgl-devel
+    - xorg-xorgproto
+    - xorg-libx11
+    - xorg-libxau
+    - xorg-libxcursor
+    - xorg-libxext
+    - xorg-libxfixes
+    - xorg-libxft
+    - xorg-libxpm
+{% endif %}
     - {{ stdlib("c") }}
     - cfitsio
     - davix
@@ -150,11 +152,9 @@ requirements:
     - libtiff
     - libxml2
     - lz4-c
-    # - mysql
     - nlohmann_json
     - openssl
     - pcre
-    # - postgresql
     - pythia8
     - sqlite
     - tbb
@@ -165,20 +165,19 @@ requirements:
     - numpy
     - xrootd
     - liblzma-devel
-    # FIXME: The generated allDict.cxx.pch is dependent on version of the C++ headers used
     - xxhash
     - zlib
     - zstd
-    - if: not (osx and arm64)
-      then:
-        - llvm {{ clang_version }}.* {{ clang_patches_version }}*
-        - llvm-openmp {{ clang_version }}.*
-        - llvmdev {{ clang_version }}.* {{ clang_patches_version }}*
-        - clangdev {{ clang_version }}.* {{ clang_patches_version }}*
+{% if not (osx and arch == 'arm64') %}
+    - llvm {{ clang_version }}.* {{ clang_patches_version }}*
+    - llvm-openmp {{ clang_version }}.*
+    - llvmdev {{ clang_version }}.* {{ clang_patches_version }}*
+    - clangdev {{ clang_version }}.* {{ clang_patches_version }}*
+{% endif %}
+
   run:
     - python
     - numpy
-    # FIXME: Required to ensure a consistent etc/allDict.cxx.pch
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
     - {{ stdlib("c") }}
@@ -186,15 +185,15 @@ requirements:
     - {{ pin_compatible('nlohmann_json', upper_bound='x.x.x') }}
     - cffi
     - graphviz
-    - if: linux
-      then:
-        - xorg-xorgproto
-        - xorg-libx11
-        - xorg-libxext
-        - xorg-libxpm
-        - xorg-libxft
-        - libglu
-  
+{% if linux %}
+    - xorg-xorgproto
+    - xorg-libx11
+    - xorg-libxext
+    - xorg-libxpm
+    - xorg-libxft
+    - libglu
+{% endif %}
+
   run_constraints:
     - numba >=0.52
     - cling ==9999
@@ -207,14 +206,10 @@ test:
   commands:
     - root -l -b -q -x
     - root -l -b -q -x test.cpp
-    # When testing with -e, explicitly set the return code to zero
     - root -b -l -q -x -e '2+3; 0'
     - root -b -l -q -x -e 'gSystem->LoadAllLibraries(); 0'
-    # Test if OpenGL is working
     - root -b -l -q -x -e 'gStyle->SetCanvasPreferGL(kTRUE); c = new TCanvas(); if (!c->UseGL()) { throw std::runtime_error("OpenGL does not appear to be working"); }'
-    # This tutorial uses davix to access a ROOT file over HTTP
     - root -b -l -q -x "${PREFIX}/tutorials/tree/run_h1analysis.C"
-
 
 about:
   home: https://root.cern/
