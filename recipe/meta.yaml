@@ -6,12 +6,25 @@
 {% set commit_version = environ.get('COMMIT_VERSION', versions.keys()|first)|string %}
 {% set parts = commit_version.split('_') %}
 {% set version = parts[0] %}
-{% set extras = namespace(versions={}) %}
+
+{% set extras_list = [] %}
 {% for suffix in parts[1:] %}
-  {% set prefix = suffix | regex_replace('[^a-zA-Z].*', '') %}
-  {% set ver = suffix[len(prefix):] %}
-  {% do extras.update({prefix: ver}) %}
+  {# extract prefix and ver using safe methods #}
+  {% set prefix = '' %}
+  {% set ver = '' %}
+  {% for c in suffix %}
+    {% if c.isalpha() and ver == '' %}
+      {% set prefix = prefix + c %}
+    {% else %}
+      {% set ver = ver + c %}
+    {% endif %}
+  {% endfor %}
+  {% set extras_list = extras_list + [(prefix, ver)] %}
 {% endfor %}
+
+{# convert list of tuples to dict #}
+{% set extras = dict(extras_list) %}
+
 
 package:
   name: {{ environ.get('ANACONDA_PACKAGE', "root")|string|lower }}
