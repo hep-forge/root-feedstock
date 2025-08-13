@@ -1,6 +1,12 @@
 #!/bin/bash
 set -x
 
+mkdir build-scripts
+cd build-scripts
+
+cmake $RECIPE_DIR/scripts
+cd ..
+
 if command -v sccache &> /dev/null; then
     export CMAKE_C_COMPILER_LAUNCHER=sccache
     export CMAKE_CXX_COMPILER_LAUNCHER=sccache
@@ -12,8 +18,8 @@ pwd
 ls -ls 
 
 # rebuild afterimage ./configure script after patch
-cp $BUILD_PREFIX/share/gnuconfig/config.* root-source/graf2d/asimage/src/libAfterImage
-(cd root-source/graf2d/asimage/src/libAfterImage; autoconf)
+cp $BUILD_PREFIX/share/gnuconfig/config.* graf2d/asimage/src/libAfterImage
+(cd graf2d/asimage/src/libAfterImage; autoconf)
 
 if [[ "${target_platform}" == "linux-"* ]]; then
   # Conda's binary relocation can result in string changing which can result in errors like
@@ -36,7 +42,7 @@ fi
 # May not be very important but nice to do
 OLDVERSIONMACOS='${MACOSX_VERSION}'
 sed -i -e "s@${OLDVERSIONMACOS}@${MACOSX_DEPLOYMENT_TARGET}@g" \
-    root-source/cmake/modules/SetUpMacOS.cmake
+    cmake/modules/SetUpMacOS.cmake
 
 declare -a CMAKE_PLATFORM_FLAGS
 
@@ -77,7 +83,7 @@ if [[ "${target_platform}" == linux* ]]; then
 
     # Fix finding X11 with CMake, copied from below with minor modifications
     # https://github.com/Kitware/CMake/blob/e59e17c1c7059b7d0f02d6b12bc3094a2afee778/Modules/FindX11.cmake
-    cp "${RECIPE_DIR}/FindX11.cmake" "root-source/cmake/modules/"
+    cp "${RECIPE_DIR}/FindX11.cmake" "cmake/modules/"
 
     # Hide symbols from LLVM/clang to avoid conflicts with other libraries
     set +x
@@ -122,7 +128,7 @@ export CXXFLAGS
 # The cross-linux toolchain breaks find_file relative to the current file
 # Patch up with sed
 sed -i -E 's#(ROOT_TEST_DRIVER RootTestDriver.cmake PATHS \$\{THISDIR\} \$\{CMAKE_MODULE_PATH\} NO_DEFAULT_PATH)#\1 CMAKE_FIND_ROOT_PATH_BOTH#g' \
-    ${SRC_DIR}/root-source/cmake/modules/RootNewMacros.cmake
+    ${SRC_DIR}/cmake/modules/RootNewMacros.cmake
 
 # The basics
 if [ "${ROOT_CONDA_BUILD_TYPE-}" == "" ]; then
@@ -204,9 +210,9 @@ if [[ "${target_platform}" != "${build_platform}" ]]; then
     CMAKE_PLATFORM_FLAGS+=("-Druntime_cxxmodules=OFF")
 
     # Build rootcling_stage1 for the current platform
-    cp "${SRC_DIR}/root-source/interpreter/cling/lib/Interpreter/CIFactory.cpp"{,.orig}
-    sed -i "s@TODO_OVERRIDE_TARGET@\"--target=$(echo "${BUILD}" | sed 's@powerpc64le@ppc64le@g')\"@g" "${SRC_DIR}/root-source/interpreter/cling/lib/Interpreter/CIFactory.cpp"
-    diff "${SRC_DIR}/root-source/interpreter/cling/lib/Interpreter/CIFactory.cpp"{.orig,} || true
+    cp "${SRC_DIR}/interpreter/cling/lib/Interpreter/CIFactory.cpp"{,.orig}
+    sed -i "s@TODO_OVERRIDE_TARGET@\"--target=$(echo "${BUILD}" | sed 's@powerpc64le@ppc64le@g')\"@g" "${SRC_DIR}/interpreter/cling/lib/Interpreter/CIFactory.cpp"
+    diff "${SRC_DIR}/interpreter/cling/lib/Interpreter/CIFactory.cpp"{.orig,} || true
 
     declare -a CMAKE_PLATFORM_FLAGS_BUILD
     CMAKE_PLATFORM_FLAGS_BUILD+=("-Dminimal=ON")
@@ -264,9 +270,9 @@ if [[ "${target_platform}" != "${build_platform}" ]]; then
         cmake --build "${SRC_DIR}/build-rootcling_stage1-xp" --target rootcling_stage1 -- "-j${CPU_COUNT}"
 
     # Build rootcling for the current platform but that will target the host platform
-    cp ${SRC_DIR}/root-source/interpreter/cling/lib/Interpreter/CIFactory.cpp{.orig,}
-    sed -i "s@TODO_OVERRIDE_TARGET@\"--target=$(echo "${HOST}" | sed 's@powerpc64le@ppc64le@g')\"@g" ${SRC_DIR}/root-source/interpreter/cling/lib/Interpreter/CIFactory.cpp
-    diff ${SRC_DIR}/root-source/interpreter/cling/lib/Interpreter/CIFactory.cpp{.orig,} || true
+    cp ${SRC_DIR}/interpreter/cling/lib/Interpreter/CIFactory.cpp{.orig,}
+    sed -i "s@TODO_OVERRIDE_TARGET@\"--target=$(echo "${HOST}" | sed 's@powerpc64le@ppc64le@g')\"@g" ${SRC_DIR}/interpreter/cling/lib/Interpreter/CIFactory.cpp
+    diff ${SRC_DIR}/interpreter/cling/lib/Interpreter/CIFactory.cpp{.orig,} || true
 
     CONDA_BUILD_SYSROOT="${CONDA_BUILD_SYSROOT_BUILD}" CMAKE_PREFIX_PATH="${BUILD_PREFIX}" \
         cmake "${SRC_DIR}/root-source" \
