@@ -36,6 +36,8 @@ build:
   {% endif %}
 
 {% set gcc_version = extras.get('gcc', '') %}
+{% set gnu_pin = " " + gcc_version + ".*" %}
+
 {% set clang_versions = {
     "6.32.02": "16.0.6",
     "6.34.08": "18.1.8"
@@ -104,6 +106,109 @@ build:
 
 requirements:
   build:
+    - {{ compiler('c') }}{{ gnu_pin }} # [linux]
+    - {{ compiler('cxx') }}{{ gnu_pin }} # [linux]
+    - {{ stdlib('c') }}
+
+    - autoconf
+    - cmake<=3.31
+    - git
+    - pkg-config
+    - sed
+    - make
+
+    # Required for OpenGL support
+    # See https://conda-forge.org/docs/maintainer/knowledge_base.html?highlight=cdt#libgl
+    - {{ cdt('mesa-libgl-devel') }}  # [linux]
+    - {{ cdt('mesa-dri-drivers') }}  # [linux]
+    - {{ cdt('libselinux') }}  # [linux]
+    - {{ cdt('libxdamage') }}  # [linux]
+    - {{ cdt('libxxf86vm') }}  # [linux]
+
+  host:
+    - {{ compiler('c') }}{{ gnu_pin }} # [linux]
+    - {{ compiler('cxx') }}{{ gnu_pin }} # [linux]
+    - {{ stdlib('c') }}
+
+    - libblas
+    - libcblas
+    - libstdcxx-ng{{ gnu_pin }}
+    - libcxx
+    - binutils
+    - openmp
+{% if builtin_pyroot %}
+    - python
+    - numpy
+{% endif %}
+    - afterimage
+    - lz4-c
+    - xxhash
+    - cfitsio
+    - gdk-pixbuf # [win]
+    - giflib
+    - freetype
+    - gtest
+    - libxml2
+    - ftgl
+    - glew
+    - gl2ps
+    - glib
+    - gsl
+    - nlohmann_json
+    - pcre2
+    - fftw
+    - zlib
+    - zlib-ng
+    - zstd
+    - tbb
+    - tbb-devel
+    - vector-classes
+    - vdt
+    - libglu
+    - xz
+    - graphviz
+    - pythia
+    - xrootd
+    - openssl
+    - davix>=0.6.4
+    - xorg-libx11  # [linux]
+    - xorg-libxau  # [linux]
+    - xorg-libxcursor  # [linux]
+    - xorg-libxext  # [linux]
+    - xorg-libxfixes  # [linux]
+    - xorg-libxft  # [linux]
+    - xorg-libxpm  # [linux]
+    - xorg-xorgproto # [linux]
+{% if not builtin_clang %}
+    - llvm {{ clang_version }}  # [not (osx and arm64)]
+    - llvmdev {{ clang_version }}  # [not (osx and arm64)]
+    - clangdev {{ clang_version }} {{ clang_patches_version }}*  # [not (osx and arm64)]
+{% endif %}
+
+  run:
+{% if builtin_pyroot %}
+    - python
+{% endif %}
+    # - {{ compiler('c') }}{{ gnu_pin }} # [linux]
+    # - {{ compiler('cxx') }}{{ gnu_pin }} # [linux]
+    # - {{ stdlib('c') }}
+    - libstdcxx-ng{{ gnu_pin }}
+    # - libcxx{{ gnu_pin }}
+    - xxhash
+    - nlohmann_json
+    - xz
+    - libglu
+    - graphviz
+    - xorg-libx11  # [linux]
+    - xorg-libxext  # [linux]
+    - xorg-libxpm  # [linux]
+    - xorg-libxft  # [linux]
+    - xorg-xorgproto # [linux]
+    - vdt
+    - tbb
+    - davix>=0.6.4
+
+
     - {{ compiler('c') }} # [linux]
     - {{ compiler('cxx') }} # [linux]
     - {{ stdlib('c') }}
