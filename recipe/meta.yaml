@@ -13,6 +13,11 @@ package:
   name: {{ environ.get('ANACONDA_PACKAGE', "root")|string|lower }}
   version: {{ environ.get('ANACONDA_VERSION', version)|replace("-", ".") }}
 
+{% set root_cxx_standard = {
+    "6.32.02": "17",
+    "6.34.08": "20"
+} %}
+
 {% set gnu_versions = {
     "6.32.02": "14",
     "6.34.08": "15"
@@ -82,6 +87,9 @@ build:
 script_env:
   - clang_version={{ clang_version }}
   - clang_patches_version={{ clang_patches_version }}
+  {% if root_cxx_standard.get(version, "") %}
+  - ROOT_CXX_STANDARD={{ root_cxx_standard.get(version, "") }}
+  {% endif %}
   {% if builtin_pyroot %}- ROOT_CONDA_BUILTIN_PYROOT=1 {%- endif %}
   {% if builtin_clang %}- ROOT_CONDA_BUILTIN_CLANG=1 {%- endif %}
   {% if "ROOT_CONDA_BUILD_TYPE" in os.environ %}- ROOT_CONDA_BUILD_TYPE {%- endif %}
