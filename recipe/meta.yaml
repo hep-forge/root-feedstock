@@ -3,21 +3,30 @@
     "6.34.08": "1ee4ed1a5acc661def41a033a91e8775b2a8f3841cb9b8502988bb23d2bc5d7a"
 } %}
 
-{% set version = environ.get('COMMIT_VERSION', None) %}
-{% set version = version or versions.keys()|first %}
-{% set version = version|string %}
+{% set commit_version = environ.get('COMMIT_VERSION', versions.keys()|first)|string %}
+{% set parts = commit_version.split('-') %}
+{% set version = parts[0] %}
+{% set extras = {} %}
+{% for suffix in parts[1:] %}
+  {% set m = suffix | regex_search('^([a-zA-Z]+)([0-9\\.]+)$') %}
+  {% if m %}
+    {% set prefix = m.group(1) %}
+    {% set ver = m.group(2) %}
+    {% do extras.update({prefix: ver}) %}
+  {% endif %}
+{% endfor %}
 
 package:
   name: {{ environ.get('ANACONDA_PACKAGE', "root")|string|lower }}
   version: {{ environ.get('ANACONDA_VERSION', version)|replace("-", ".") }}
 
-# {% set gnu_versions = {
-#     "6.32.02": "15",
-#     "6.34.08": "15"
-# } %}
-# {% set _gnu_major = gnu_versions.get(version, "") %}
-# {% set gnu_pin = (" " + _gnu_major + ".*") if _gnu_major else "" %}
+build:
+  number: 0
+  {% if "gcc" in extras %}
+  string: "gcc{{ extras["gcc"].replace('.', '') }}"
+  {% endif %}
 
+{% set gcc_version = extras.get('gcc', '') %}
 {% set clang_versions = {
     "6.32.02": "16.0.6",
     "6.34.08": "18.1.8"
@@ -110,6 +119,14 @@ requirements:
     - {{ compiler('cxx') }} # [linux]
     - {{ stdlib('c') }}
 
+    {% if gcc_version %}
+    - libgcc-ng {{ gcc_version }}.*
+    - libstdcxx-ng {{ gcc_version }}.*
+    {% else %}
+    - libgcc-ng
+    - libstdcxx-ng
+    {% endif %}
+    
     - libblas
     - libcblas
     - libcxx
@@ -171,7 +188,14 @@ requirements:
     - {{ compiler('c') }} # [linux]
     - {{ compiler('cxx') }} # [linux]
     - {{ stdlib('c') }}
+    {% if gcc_version %}
+    - libgcc-ng {{ gcc_version }}.*
+    - libstdcxx-ng {{ gcc_version }}.*
+    {% else %}
+    - libgcc-ng
     - libstdcxx-ng
+    {% endif %}
+    
     - xxhash
     - nlohmann_json
     - xz
