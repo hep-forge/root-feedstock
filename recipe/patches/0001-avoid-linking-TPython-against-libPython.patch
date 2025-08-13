@@ -1,14 +1,14 @@
-From ebd773823921ce819f2976126dd1b9cd3cded67c Mon Sep 17 00:00:00 2001
+From 5684c0bcbd85edcca8e32078bf554e7919a6870a Mon Sep 17 00:00:00 2001
 From: Vincenzo Eduardo Padulano <vincenzo.eduardo.padulano@cern.ch>
 Date: Thu, 20 Jun 2024 14:08:06 +0200
-Subject: [PATCH] [PyROOT] Avoid linking TPython against libPython
+Subject: [PATCH] Avoid linking TPython against libPython
 
 ---
  bindings/tpython/CMakeLists.txt | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/bindings/tpython/CMakeLists.txt b/bindings/tpython/CMakeLists.txt
-index dbe1c9273a..14893e272d 100644
+index cfb9f4e65e..fddb8c09fa 100644
 --- a/bindings/tpython/CMakeLists.txt
 +++ b/bindings/tpython/CMakeLists.txt
 @@ -27,7 +27,7 @@ ROOT_STANDARD_LIBRARY_PACKAGE(ROOTTPython
@@ -21,5 +21,5 @@ index dbe1c9273a..14893e272d 100644
  
  # Disables warnings originating from deprecated register keyword in Python
 -- 
-2.39.3 (Apple Git-145)
+2.45.0
 
