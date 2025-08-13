@@ -173,7 +173,7 @@ requirements:
     - {{ compiler('cxx') }} # [linux]
     - {{ stdlib('c') }}
     - libstdcxx-ng
-    - libcxx{{ gnu_pin }}
+    - libcxx
     - xxhash
     - nlohmann_json
     - xz
