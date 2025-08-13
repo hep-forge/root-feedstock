@@ -86,105 +86,119 @@ build:
 
 requirements:
   build:
-    - {{ compiler('c') }}{{gnu_pin}} # [linux]
-    - {{ compiler('cxx') }}{{gnu_pin}} # [linux]
-    - {{ stdlib('c') }}
-
-    - autoconf
-    - cmake<=3.31
-    - git
-    - pkg-config
-    - sed
-    - make
-
-    # Required for OpenGL support
-    # See https://conda-forge.org/docs/maintainer/knowledge_base.html?highlight=cdt#libgl
-    - libgl-devel  # [linux]
-    - libopengl-devel # [linux]
-    
-  host:
-    - {{ compiler('c') }}{{gnu_pin}} # [linux]
-    - {{ compiler('cxx') }}{{gnu_pin}} # [linux]
-    - {{ stdlib('c') }}
-
-    - libblas
-    - libcblas
-    - libstdcxx-ng
-    - libcxx
-    - binutils
-    - openmp
-{% if builtin_pyroot %}
-    - python
-    - numpy
-{% endif %}
-    - afterimage
-    - lz4-c
-    - xxhash
-    - cfitsio
-    - gdk-pixbuf # [win]
-    - giflib
-    - freetype
-    - gtest
-    - libxml2
-    - ftgl
-    - glew
-    - gl2ps
-    - glib
-    - gsl
-    - nlohmann_json
-    - pcre2
-    - fftw
-    - zlib
-    - zlib-ng
-    - zstd
-    - tbb
-    - tbb-devel
-    - vector-classes
-    - vdt
-    - libglu
-    - xz
-    - graphviz
-    - pythia
-    - xrootd
-    - openssl
-    - davix>=0.6.4
-    - xorg-libx11  # [linux]
-    - xorg-libxau  # [linux]
-    - xorg-libxcursor  # [linux]
-    - xorg-libxext  # [linux]
-    - xorg-libxfixes  # [linux]
-    - xorg-libxft  # [linux]
-    - xorg-libxpm  # [linux]
-    - xorg-xorgproto # [linux]
-{% if not builtin_clang %}
-    - llvm {{ clang_version }}  # [not (osx and arm64)]
-    - llvmdev {{ clang_version }}  # [not (osx and arm64)]
-    - clangdev {{ clang_version }} {{ clang_patches_version }}*  # [not (osx and arm64)]
-{% endif %}
-
-  run:
-{% if builtin_pyroot %}
-    - python
-{% endif %}
-    - {{ compiler('c') }}{{gnu_pin}} # [linux]
-    - {{ compiler('cxx') }}{{gnu_pin}} # [linux]
-    - {{ stdlib('c') }}
-    - libstdcxx-ng{{gnu_pin}}
-    - libcxx{{gnu_pin}}
-    - xxhash
-    - nlohmann_json
-    - xz
-    - libglu
-    - graphviz
-    - xorg-libx11  # [linux]
-    - xorg-libxext  # [linux]
-    - xorg-libxpm  # [linux]
-    - xorg-libxft  # [linux]
-    - xorg-xorgproto # [linux]
-    - vdt
-    - tbb
-    - davix>=0.6.4
-
+        - ${{ compiler('c') }}
+        - ${{ compiler('cxx') }}
+        - ${{ stdlib("c") }}
+        - autoconf
+        - cmake
+        - git
+        - pkg-config
+        - sed
+        - make
+        - ninja
+        - if: unix
+          then: gnuconfig
+        - if: build_platform != target_platform
+          then:
+            - cross-python_${{ target_platform }}
+            - python
+            - numpy
+            - xxhash
+            - zlib
+            - zstd
+            - freetype
+            - liblzma-devel
+            - if: not osx
+              then:
+                - llvm ${{ clang_version }}.* ${{ clang_patches_version }}*
+                - llvm-openmp ${{ clang_version }}.*
+                - llvmdev ${{ clang_version }}.* ${{ clang_patches_version }}*
+                - clangdev ${{ clang_version }}.* ${{ clang_patches_version }}*
+      host:
+        - libblas
+        - libcblas
+        - if: linux
+          then:
+            - ${{ compiler('c') }}
+            - ${{ compiler('cxx') }}
+            - libglu
+            - libgl-devel
+            - xorg-xorgproto
+            - xorg-libx11
+            - xorg-libxau
+            - xorg-libxcursor
+            - xorg-libxext
+            - xorg-libxfixes
+            - xorg-libxft
+            - xorg-libxpm
+        - ${{ stdlib("c") }}
+        - cfitsio
+        - davix
+        - fftw
+        - freetype
+        - ftgl
+        - gdk-pixbuf
+        - giflib
+        - glew
+        - glib
+        - gl2ps
+        - graphviz
+        - gsl
+        - gtest
+        - libpng
+        - librsvg
+        - libtiff
+        - libxml2
+        - lz4-c
+        # - mysql
+        - nlohmann_json
+        - openssl
+        - pcre
+        # - postgresql
+        - pythia8
+        - sqlite
+        - tbb
+        - tbb-devel
+        - vector-classes
+        - vdt
+        - python
+        - numpy
+        - xrootd
+        - liblzma-devel
+        # FIXME: The generated allDict.cxx.pch is dependent on version of the C++ headers used
+        - xxhash
+        - zlib
+        - zstd
+        - if: not (osx and arm64)
+          then:
+            - llvm ${{ clang_version }}.* ${{ clang_patches_version }}*
+            - llvm-openmp ${{ clang_version }}.*
+            - llvmdev ${{ clang_version }}.* ${{ clang_patches_version }}*
+            - clangdev ${{ clang_version }}.* ${{ clang_patches_version }}*
+      run:
+        - python
+        - numpy
+        # FIXME: Required to ensure a consistent etc/allDict.cxx.pch
+        - ${{ compiler('c') }}
+        - ${{ compiler('cxx') }}
+        - ${{ stdlib("c") }}
+        - ${{ pin_compatible('xxhash', upper_bound='x.x.x') }}
+        - ${{ pin_compatible('nlohmann_json', upper_bound='x.x.x') }}
+        - cffi
+        - graphviz
+        - if: linux
+          then:
+            - xorg-xorgproto
+            - xorg-libx11
+            - xorg-libxext
+            - xorg-libxpm
+            - xorg-libxft
+            - libglu
+      run_constraints:
+        - numba >=0.52
+        - cling ==9999
+        - root5 ==9999
+        - afterimage ==9999
 
 test:
   files:
