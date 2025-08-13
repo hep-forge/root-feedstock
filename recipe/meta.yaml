@@ -32,7 +32,7 @@ package:
 
 build:
   number: 0
-  {% if "gcc" in extras %}
+  {% if "gcc" in extras.versions %}
   string: "gcc{{ extras.versions["gcc"].replace('.', '') }}"
   {% endif %}
 
