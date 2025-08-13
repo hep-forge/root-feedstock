@@ -260,7 +260,7 @@ if [[ "${target_platform}" != "${build_platform}" ]]; then
     CMAKE_ARGS_BUILD=$(echo $CMAKE_ARGS | sed s@$PREFIX@$BUILD_PREFIX@g | sed s@${host_alias}@${build_alias}@g)
 
     CONDA_BUILD_SYSROOT="${CONDA_BUILD_SYSROOT_BUILD}" CMAKE_PREFIX_PATH="${BUILD_PREFIX}" \
-        cmake "${SRC_DIR}/root-source" \
+        cmake "${SRC_DIR}" \
                 -B "${SRC_DIR}/build-rootcling_stage1-xp" \
                 -DCLING_CXX_PATH="$CXX_FOR_BUILD" \
                 "${CMAKE_PLATFORM_FLAGS_BUILD[@]}" \
@@ -275,7 +275,7 @@ if [[ "${target_platform}" != "${build_platform}" ]]; then
     diff ${SRC_DIR}/interpreter/cling/lib/Interpreter/CIFactory.cpp{.orig,} || true
 
     CONDA_BUILD_SYSROOT="${CONDA_BUILD_SYSROOT_BUILD}" CMAKE_PREFIX_PATH="${BUILD_PREFIX}" \
-        cmake "${SRC_DIR}/root-source" \
+        cmake "${SRC_DIR}" \
                 -B "${SRC_DIR}/build-rootcling-xp" \
                 -DCLING_CXX_PATH="$CXX" \
                 "${CMAKE_PLATFORM_FLAGS_BUILD[@]}" \
@@ -434,7 +434,7 @@ if [[ "${target_platform}" != osx* ]]; then
 fi
 
 # Now we can actually run CMake
-cmake $CMAKE_ARGS "${CMAKE_PLATFORM_FLAGS[@]}" ${SRC_DIR}/root-source
+cmake $CMAKE_ARGS "${CMAKE_PLATFORM_FLAGS[@]}" ${SRC_DIR}
 set +e
 
 if [[ "${target_platform}" != "${build_platform}" ]]; then
