@@ -25,15 +25,14 @@
 {# convert list of tuples to dict #}
 {% set extras = dict(extras_list) %}
 
-
 package:
   name: {{ environ.get('ANACONDA_PACKAGE', "root")|string|lower }}
   version: {{ environ.get('ANACONDA_VERSION', version)|replace("-", ".") }}
 
 build:
   number: 0
-  {% if "gcc" in extras.versions %}
-  string: "gcc{{ extras.versions["gcc"].replace('.', '') }}"
+  {% if "gcc" in extras %}
+  string: "gcc{{ extras["gcc"].replace('.', '') }}"
   {% endif %}
 
 {% set gcc_version = extras.get('gcc', '') %}
