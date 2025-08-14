@@ -175,7 +175,7 @@ requirements:
     - nlohmann_json
     - openssl
     - pcre
-    - pythia8
+    - pythia
     - sqlite
     - tbb
     - tbb-devel
