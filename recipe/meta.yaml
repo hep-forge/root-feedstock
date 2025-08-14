@@ -18,6 +18,11 @@ package:
     "6.34.10": "20"
 } %}
 
+{% set python_version = {
+    "6.32.10": "3.10",
+    "6.34.10": "3.12"
+} %}
+
 {% set gnu_versions = {
     "6.32.10": "14",
     "6.34.10": "15"
@@ -41,6 +46,13 @@ package:
 {% set builtin_pyroot = True %}
 {% set builtin_clang = False %}
 
+build:
+  number: 0
+  string: "py{{ python_version.get(version).replace('.', '') }}"
+  ignore_run_exports_from:
+    - tbb
+    - tbb-devel
+    
 source:
   url: "https://github.com/root-project/root/archive/refs/tags/v{{ version|replace('.', '-') }}.tar.gz"
   {% if versions.get(version) %}
@@ -116,7 +128,7 @@ requirements:
 {% endif %}
 {% if build_platform != target_platform %}
     - cross-python_{{ target_platform }}
-    - python
+    - python {{ python_version }}.* *_cpython
     - numpy
     - xxhash
     - zlib
@@ -181,7 +193,7 @@ requirements:
     - tbb-devel
     - vector-classes
     - vdt
-    - python
+    - python {{ python_version.get(version) }}.* *_cpython
     - numpy
     - xrootd
     - liblzma-devel
@@ -201,7 +213,7 @@ requirements:
 {% endif %}
 
   run:
-    - python
+    - python {{ python_version.get(version) }}.* *_cpython
     - numpy
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
