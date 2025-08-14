@@ -65,7 +65,7 @@ source:
     - patches/0001-Don-t-try-to-generate-hsimple.root-when-cross-compil.patch  # [build_platform != target_platform]
     - 0002-HACK-Support-overriding-triplet-used-by-cling.patch  # [build_platform != target_platform]
     - patches/0001-veccore-jobserver-issue.patch
-    {% if version < "6.34" %}
+    {% if version < "6.32.10" %}
     - patches/0001-Reset-CMAKE-module-path-for-interpreter.patch
     - patches/0001-clad-jobserver-issue.patch
     - patches/disable-hsimple.root
