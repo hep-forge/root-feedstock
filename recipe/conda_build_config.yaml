@@ -8,7 +8,6 @@ c_stdlib_version:
 
 python:
   - 3.10.* *_cpython
-  - 3.11.* *_cpython
   - 3.12.* *_cpython
 
 packages:
