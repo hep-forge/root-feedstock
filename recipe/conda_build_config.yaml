@@ -11,4 +11,5 @@ python:
   - 3.12.* *_cpython
 
 packages:
+  - python
   - numpy
