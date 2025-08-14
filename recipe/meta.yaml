@@ -14,25 +14,25 @@ package:
   version: {{ environ.get('ANACONDA_VERSION', version)|replace("-", ".") }}
 
 {% set root_cxx_standard = {
-    "6.32.02": "17",
-    "6.34.08": "20"
+    "6.32.10": "17",
+    "6.34.10": "20"
 } %}
 
 {% set gnu_versions = {
-    "6.32.02": "14",
-    "6.34.08": "15"
+    "6.32.10": "14",
+    "6.34.10": "15"
 } %}
 {% set _gnu_major = gnu_versions.get(version, "") %}
 {% set gnu_pin = (" " + _gnu_major + ".*") if _gnu_major else "" %}
 
 {% set clang_versions = {
-    "6.32.02": "16.0.6",
-    "6.34.08": "18.1.8"
+    "6.32.10": "16.0.6",
+    "6.34.10": "18.1.8"
 } %}
 
 {% set clang_patches = {
-    "6.32.02": "63202",
-    "6.34.08": "63406"
+    "6.32.10": "63202",
+    "6.34.10": "63406"
 } %}
 
 {% set clang_version = clang_versions.get(version) %}
