@@ -318,6 +318,7 @@ if [ "${ROOT_CONDA_BUILTIN_PYROOT-}" = "true" ]; then
 else
     CMAKE_PLATFORM_FLAGS+=("-DPython3_EXECUTABLE=${PYTHON}")
     CMAKE_PLATFORM_FLAGS+=("-Dpyroot=OFF")
+    CMAKE_PLATFORM_FLAGS+=("-Dpython=OFF")
     CMAKE_PLATFORM_FLAGS+=("-Dtmva-pymva=OFF")
 fi
 
