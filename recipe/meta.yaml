@@ -48,7 +48,7 @@ package:
 
 build:
   number: 0
-  string: "py{{ python_version.get(version).replace('.', '') }}"
+  string: "py{{ python_version.get(version).replace('.', '') }}_gcc{{ gnu_versions.get(version).replace('.', '') }}"
   ignore_run_exports_from:
     - tbb
     - tbb-devel
