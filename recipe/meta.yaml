@@ -152,8 +152,8 @@ requirements:
     - libblas
     - libcblas
 {% if linux %}
-    - {{ compiler('c') }}
-    - {{ compiler('cxx') }}
+    - {{ compiler('c') }}{{ gnu_pin }}
+    - {{ compiler('cxx') }}{{ gnu_pin }}
     - libglu
     - libgl-devel
     - xorg-xorgproto
@@ -215,8 +215,8 @@ requirements:
   run:
     - python {{ python_version.get(version) }}.* *_cpython
     - numpy
-    - {{ compiler('c') }}
-    - {{ compiler('cxx') }}
+    - {{ compiler('c') }}{{ gnu_pin }}
+    - {{ compiler('cxx') }}{{ gnu_pin }}
     - {{ stdlib("c") }}
     - xxhash
     - nlohmann_json
