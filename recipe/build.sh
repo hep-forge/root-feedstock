@@ -359,6 +359,10 @@ CMAKE_PLATFORM_FLAGS+=("-Dwebgui=ON")
 CMAKE_PLATFORM_FLAGS+=("-Dxml=ON")
 CMAKE_PLATFORM_FLAGS+=("-Dxrootd=ON")
 
+if [[ $ROOT_VERSION_MAJOR -le 6 && $ROOT_VERSION_MINOR -le 34 ]]; then
+    CMAKE_PLATFORM_FLAGS+=("-Dhtml=ON")
+fi
+
 # On by default but disabled
 CMAKE_PLATFORM_FLAGS+=("-Dgfal=OFF")
 CMAKE_PLATFORM_FLAGS+=("-Dpythia6=OFF")
