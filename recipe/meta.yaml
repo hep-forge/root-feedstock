@@ -86,6 +86,10 @@ source:
 
 build:
   script_env:
+    - ROOT_VERSION={{ version }}
+    - ROOT_VERSION_MAJOR={{ major }}
+    - ROOT_VERSION_MINOR={{ minor }}
+    - ROOT_VERSION_PATCH={{ patch }}
     - ROOT_CXX_STANDARD={{ root_cxx_standard.get(version) }}
     - clang_version={{ clang_version }}
     - clang_patches_version={{ clang_patches_version }}
