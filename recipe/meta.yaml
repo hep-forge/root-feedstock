@@ -119,6 +119,7 @@ requirements:
   build:
     - {{ compiler('c') }}{{ gnu_pin }}
     - {{ compiler('cxx') }}{{ gnu_pin }}
+    - {{ compiler('fortran') }}{{ gnu_pin }}
     - {{ stdlib("c") }}
     - autoconf
     - cmake
@@ -158,6 +159,7 @@ requirements:
 {% if linux %}
     - {{ compiler('c') }}{{ gnu_pin }}
     - {{ compiler('cxx') }}{{ gnu_pin }}
+    - {{ compiler('fortran') }}{{ gnu_pin }}
     - libglu
     - libgl-devel
     - xorg-xorgproto
@@ -221,6 +223,7 @@ requirements:
     - numpy
     - {{ compiler('c') }}{{ gnu_pin }}
     - {{ compiler('cxx') }}{{ gnu_pin }}
+    - {{ compiler('fortran') }}{{ gnu_pin }}
     - {{ stdlib("c") }}
     - xxhash
     - nlohmann_json
