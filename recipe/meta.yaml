@@ -157,9 +157,6 @@ requirements:
     - libblas
     - libcblas
 {% if linux %}
-    - {{ compiler('c') }}{{ gnu_pin }}
-    - {{ compiler('cxx') }}{{ gnu_pin }}
-    - {{ compiler('fortran') }}{{ gnu_pin }}
     - libglu
     - libgl-devel
     - xorg-xorgproto
@@ -171,7 +168,6 @@ requirements:
     - xorg-libxft
     - xorg-libxpm
 {% endif %}
-    - {{ stdlib("c") }}
     - cfitsio
     - davix
     - fftw
