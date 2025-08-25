@@ -156,7 +156,6 @@ requirements:
   host:
     - {{ compiler('c') }}{{ gnu_pin }}
     - {{ compiler('cxx') }}{{ gnu_pin }}
-    - {{ compiler('fortran') }}{{ gnu_pin }}
     - {{ stdlib("c") }}
     - libblas
     - libcblas
@@ -223,7 +222,6 @@ requirements:
     - numpy
     - {{ compiler('c') }}{{ gnu_pin }}
     - {{ compiler('cxx') }}{{ gnu_pin }}
-    - {{ compiler('fortran') }}{{ gnu_pin }}
     - {{ stdlib("c") }}
     - xxhash
     - nlohmann_json
