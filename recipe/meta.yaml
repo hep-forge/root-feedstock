@@ -154,6 +154,10 @@ requirements:
 {% endif %}
 
   host:
+    - {{ compiler('c') }}{{ gnu_pin }}
+    - {{ compiler('cxx') }}{{ gnu_pin }}
+    - {{ compiler('fortran') }}{{ gnu_pin }}
+    - {{ stdlib("c") }}
     - libblas
     - libcblas
 {% if linux %}
