@@ -227,6 +227,8 @@ requirements:
     - nlohmann_json
     - cffi
     - graphviz
+    - tbb
+    - tbb-devel
 {% if linux %}
     - xorg-xorgproto
     - xorg-libx11
