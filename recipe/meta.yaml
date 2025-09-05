@@ -108,8 +108,6 @@ build:
     - zlib
     - davix
     - cfitsio
-    - tbb
-    - tbb-devel
 
 requirements:
   build:
