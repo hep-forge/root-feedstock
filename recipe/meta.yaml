@@ -165,10 +165,10 @@ requirements:
     - clangdev {{ clang_version }}.* {{ clang_patches_version }}*
 {% endif %}
 {% endif %}
-    - libgcc{{ gnu_pin }}.*           # [linux]
-    - libgcc-ng{{ gnu_pin }}.*        # [linux]
-    - libstdcxx{{ gnu_pin }}.*        # [linux]
-    - libstdcxx-ng{{ gnu_pin }}.*     # [linux]
+    # - libgcc{{ gnu_pin }}.*           # [linux]
+    # - libgcc-ng{{ gnu_pin }}.*        # [linux]
+    # - libstdcxx{{ gnu_pin }}.*        # [linux]
+    # - libstdcxx-ng{{ gnu_pin }}.*     # [linux]
 
 
   host:
@@ -232,11 +232,11 @@ requirements:
     # Note that zeromq and zeromq * drafts_* are both required
     # c.f. https://github.com/conda-forge/root-feedstock/pull/292#discussion_r2334082389
     - zeromq * drafts_*
+{% endif %}
     - libgcc{{ gnu_pin }}.*           # [linux]
     - libgcc-ng{{ gnu_pin }}.*        # [linux]
     - libstdcxx{{ gnu_pin }}.*        # [linux]
     - libstdcxx-ng{{ gnu_pin }}.*     # [linux]
-{% endif %}
 
 {% if not (osx and arch == 'arm64') %}
 {% if version < "6.34" %}
