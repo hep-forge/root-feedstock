@@ -71,11 +71,13 @@ source:
     - patches/0001-Detect-which-ar-binary-should-be-used-to-build-libAf.patch
     - patches/0001-Don-t-include-RootCPack.patch
     # --- Conditionally applied patches ---
+    {% if version < "6.36" %}
     - patches/root-x.xx.xx-osx-remove-hardcoded-sysroot.patch  # [osx]
     - patches/0001-Avoid-linking-TPython-against-libPython.patch  # [osx]
     - patches/0001-Don-t-try-to-generate-hsimple.root-when-cross-compil.patch  # [build_platform != target_platform]
     - 0002-HACK-Support-overriding-triplet-used-by-cling.patch  # [build_platform != target_platform]
     - patches/0001-veccore-jobserver-issue.patch
+    {% endif %}
     {% if version < "6.32.10" %}
     - patches/0001-Reset-CMAKE-module-path-for-interpreter.patch
     - patches/0001-clad-jobserver-issue.patch
