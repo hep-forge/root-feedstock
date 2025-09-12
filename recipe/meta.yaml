@@ -102,6 +102,10 @@ build:
   run_exports:
     - {{ pin_compatible('root', max_pin='x.x') }}
 
+    # Linux GCC C/C++/Fortran runtimes: pin major only (ABI stable per major)
+    - {{ pin_compatible('libgcc-ng',     max_pin='x') }}        # [linux]
+    - {{ pin_compatible('libstdcxx-ng',  max_pin='x') }}        # [linux]
+
     # C stdlib macro (cross-platform)
     - {{ stdlib("c") }}
       
@@ -161,7 +165,6 @@ requirements:
     - clangdev {{ clang_version }}.* {{ clang_patches_version }}*
 {% endif %}
 {% endif %}
-
 
   host:
     - {{ compiler('c') }}{{ gnu_pin }}
@@ -241,14 +244,8 @@ requirements:
   run:
     - python {{ python_version.get(version) }}.* *_cpython
     - numpy
-    # - {{ compiler('c') }}{{ gnu_pin }}
-    # - {{ compiler('cxx') }}{{ gnu_pin }}    
-    # Keep ABI at 14.x for dependents
-    - {{ pin_compatible('libgcc-ng',      min_pin='x', max_pin='x') }}   # [linux]
-    - {{ pin_compatible('libstdcxx-ng',   min_pin='x', max_pin='x') }}   # [linux]
-    - {{ pin_compatible('libgfortran5',   min_pin='x', max_pin='x') }}   # [linux]
-    - _openmp_mutex =*=*_gnu    # [linux]
-    - libgomp                  # [linux]
+    - {{ compiler('c') }}{{ gnu_pin }}
+    - {{ compiler('cxx') }}{{ gnu_pin }}
     - {{ stdlib("c") }}
     - xxhash
     - nlohmann_json
@@ -264,6 +261,8 @@ requirements:
     - xorg-libxft
     - libglu
 {% endif %}
+    - libgcc-ng={{ gnu_pin }}
+    - libstdcxx-ng={{ gnu_pin }}
 
   run_constraints:
     - numba >=0.52
