@@ -228,6 +228,16 @@ requirements:
     # c.f. https://github.com/conda-forge/root-feedstock/pull/292#discussion_r2334082389
     - zeromq * drafts_*
 {% endif %}
+    - libgcc-ng={{ gnu_pin }}
+    - libstdcxx-ng={{ gnu_pin }}
+    - libgcc-ng={{ gnu_pin }}
+    - libgcc={{ gnu_pin }}
+    - libstdcxx-ng={{ gnu_pin }}
+    - libstdcxx={{ gnu_pin }}
+    - libgcc-devel_linux-64={{ gnu_pin }}
+    - libstdcxx-devel_linux-64={{ gnu_pin }}
+    - _openmp_mutex =*=*_gnu
+    - libgomp
 
 {% if not (osx and arch == 'arm64') %}
 {% if version < "6.34" %}
@@ -263,6 +273,14 @@ requirements:
 {% endif %}
     - libgcc-ng={{ gnu_pin }}
     - libstdcxx-ng={{ gnu_pin }}
+    - libgcc-ng={{ gnu_pin }}
+    - libgcc={{ gnu_pin }}
+    - libstdcxx-ng={{ gnu_pin }}
+    - libstdcxx={{ gnu_pin }}
+    - libgcc-devel_linux-64={{ gnu_pin }}
+    - libstdcxx-devel_linux-64={{ gnu_pin }}
+    - _openmp_mutex =*=*_gnu
+    - libgomp
 
   run_constraints:
     - numba >=0.52
