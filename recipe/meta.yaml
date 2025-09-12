@@ -103,10 +103,10 @@ build:
     - {{ pin_compatible('root', max_pin='x.x') }}
 
     # Linux GCC C/C++/Fortran runtimes: pin major only (ABI stable per major)
-    - {{ compiler('libgcc') }}{{ gnu_pin }}           # [linux]
-    - {{ compiler('libgcc-ng') }}{{ gnu_pin }}        # [linux]
-    - {{ compiler('libstdcxx') }}{{ gnu_pin }}        # [linux]
-    - {{ compiler('libstdcxx-ng') }}{{ gnu_pin }}     # [linux]
+    - {{ compiler('libgcc') }}{{ gnu_pin }}.*           # [linux]
+    - {{ compiler('libgcc-ng') }}{{ gnu_pin }}.*        # [linux]
+    - {{ compiler('libstdcxx') }}{{ gnu_pin }}.*        # [linux]
+    - {{ compiler('libstdcxx-ng') }}{{ gnu_pin }}.*     # [linux]
 
     # C stdlib macro (cross-platform)
     - {{ stdlib("c") }}
@@ -167,10 +167,10 @@ requirements:
     - clangdev {{ clang_version }}.* {{ clang_patches_version }}*
 {% endif %}
 {% endif %}
-    - {{ compiler('libgcc') }}{{ gnu_pin }}           # [linux]
-    - {{ compiler('libgcc-ng') }}{{ gnu_pin }}        # [linux]
-    - {{ compiler('libstdcxx') }}{{ gnu_pin }}        # [linux]
-    - {{ compiler('libstdcxx-ng') }}{{ gnu_pin }}     # [linux]
+    - {{ compiler('libgcc') }}{{ gnu_pin }}.*           # [linux]
+    - {{ compiler('libgcc-ng') }}{{ gnu_pin }}.*        # [linux]
+    - {{ compiler('libstdcxx') }}{{ gnu_pin }}.*        # [linux]
+    - {{ compiler('libstdcxx-ng') }}{{ gnu_pin }}.*     # [linux]
 
 
   host:
@@ -234,10 +234,10 @@ requirements:
     # Note that zeromq and zeromq * drafts_* are both required
     # c.f. https://github.com/conda-forge/root-feedstock/pull/292#discussion_r2334082389
     - zeromq * drafts_*
-    - {{ compiler('libgcc') }}{{ gnu_pin }}           # [linux]
-    - {{ compiler('libgcc-ng') }}{{ gnu_pin }}        # [linux]
-    - {{ compiler('libstdcxx') }}{{ gnu_pin }}        # [linux]
-    - {{ compiler('libstdcxx-ng') }}{{ gnu_pin }}     # [linux]
+    - {{ compiler('libgcc') }}{{ gnu_pin }}.*           # [linux]
+    - {{ compiler('libgcc-ng') }}{{ gnu_pin }}.*        # [linux]
+    - {{ compiler('libstdcxx') }}{{ gnu_pin }}.*        # [linux]
+    - {{ compiler('libstdcxx-ng') }}{{ gnu_pin }}.*     # [linux]
 {% endif %}
 
 {% if not (osx and arch == 'arm64') %}
