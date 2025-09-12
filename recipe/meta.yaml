@@ -93,6 +93,15 @@ build:
     {% if "ROOT_CONDA_BUILD_TYPE" in os.environ %}- ROOT_CONDA_BUILD_TYPE {%- endif %}
   run_exports:
     - {{ pin_compatible('root', max_pin='x.x') }}
+
+    # Linux GCC C/C++/Fortran runtimes: pin major only (ABI stable per major)
+    - {{ pin_compatible('libgcc-ng',     max_pin='x') }}        # [linux]
+    - {{ pin_compatible('libstdcxx-ng',  max_pin='x') }}        # [linux]
+    - {{ pin_compatible('libgfortran5',  max_pin='x') }}        # [linux]
+
+    # C stdlib macro (cross-platform)
+    - {{ stdlib("c") }}
+      
   ignore_prefix_files:
     - lib/*.pcm
     - etc/allDict.cxx.pch
