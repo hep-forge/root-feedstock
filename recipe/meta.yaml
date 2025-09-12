@@ -71,7 +71,7 @@ source:
     - patches/0001-Don-t-include-RootCPack.patch
     # --- Conditionally applied patches ---
     {% if version < "6.36" %}
-    - patches/0001-Hacks.patch]
+    - patches/0001-Hacks.patch
     - patches/root-x.xx.xx-osx-remove-hardcoded-sysroot.patch  # [osx]
     - patches/0001-Avoid-linking-TPython-against-libPython.patch  # [osx]
     - patches/0001-Don-t-try-to-generate-hsimple.root-when-cross-compil.patch  # [build_platform != target_platform]
