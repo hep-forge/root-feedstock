@@ -139,6 +139,9 @@ requirements:
     - sed
     - make
     - ninja
+{% if version >= "6.34" %}
+    - zeromq
+{% endif %}
 {% if linux or osx %}
     - gnuconfig
 {% endif %}
@@ -152,7 +155,7 @@ requirements:
     - freetype
     - liblzma-devel
 {% if not osx %}
-{% if major < 6 or (major == 6 and minor < 34) %}
+{% if version < "6.34" %}
     - llvm {{ clang_version }}.*
     - llvmdev {{ clang_version }}.*
 {% else %}
@@ -216,8 +219,19 @@ requirements:
     - xxhash
     - zlib
     - zstd
+{% if version < "6.34" %}
+    # Required for roofit_multiprocess
+    - cppzmq
+    # Required zmq_ppoll API added in v4.3.5
+    - zeromq
+    # Need to request drafts API
+    # Note that zeromq and zeromq * drafts_* are both required
+    # c.f. https://github.com/conda-forge/root-feedstock/pull/292#discussion_r2334082389
+    - zeromq * drafts_*
+{% endif %}
+
 {% if not (osx and arch == 'arm64') %}
-{% if major < 6 or (major == 6 and minor < 34) %}
+{% if version < "6.34" %}
     - llvm {{ clang_version }}.*
     - llvmdev {{ clang_version }}.*
 {% else %}
