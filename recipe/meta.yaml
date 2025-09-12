@@ -233,10 +233,6 @@ requirements:
     # c.f. https://github.com/conda-forge/root-feedstock/pull/292#discussion_r2334082389
     - zeromq * drafts_*
 {% endif %}
-    - libgcc{{ gnu_pin }}.*           # [linux]
-    - libgcc-ng{{ gnu_pin }}.*        # [linux]
-    - libstdcxx{{ gnu_pin }}.*        # [linux]
-    - libstdcxx-ng{{ gnu_pin }}.*     # [linux]
 
 {% if not (osx and arch == 'arm64') %}
 {% if version < "6.34" %}
