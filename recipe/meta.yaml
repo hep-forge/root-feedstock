@@ -65,12 +65,12 @@ source:
     - patches/0002-Debugging.patch
     - patches/0001-Remove-bad-check-on-SDK-for-std_darwin.MacOSX14.2.sd.patch # [osx]
     - patches/0001-std_darwin.modulemap-Remove-headers-for-MacOSX15.0.s.patch # [osx]
-    - patches/0001-Enforce-fail-on-missing-with-afterimage-dependencies.patch
     - patches/0002-Remove-cocoa-afterimage-overrides.patch # [osx]
     - patches/0001-Detect-which-ar-binary-should-be-used-to-build-libAf.patch
     - patches/0001-Don-t-include-RootCPack.patch
     # --- Conditionally applied patches ---
     {% if version < "6.36" %}
+    - patches/0001-Enforce-fail-on-missing-with-afterimage-dependencies.patch
     - patches/0001-Hacks.patch
     - patches/root-x.xx.xx-osx-remove-hardcoded-sysroot.patch  # [osx]
     - patches/0001-Avoid-linking-TPython-against-libPython.patch  # [osx]
