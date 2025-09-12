@@ -167,6 +167,11 @@ requirements:
     - clangdev {{ clang_version }}.* {{ clang_patches_version }}*
 {% endif %}
 {% endif %}
+    - {{ compiler('libgcc') }}{{ gnu_pin }}           # [linux]
+    - {{ compiler('libgcc-ng') }}{{ gnu_pin }}        # [linux]
+    - {{ compiler('libstdcxx') }}{{ gnu_pin }}        # [linux]
+    - {{ compiler('libstdcxx-ng') }}{{ gnu_pin }}     # [linux]
+
 
   host:
     - {{ compiler('c') }}{{ gnu_pin }}
@@ -229,6 +234,10 @@ requirements:
     # Note that zeromq and zeromq * drafts_* are both required
     # c.f. https://github.com/conda-forge/root-feedstock/pull/292#discussion_r2334082389
     - zeromq * drafts_*
+    - {{ compiler('libgcc') }}{{ gnu_pin }}           # [linux]
+    - {{ compiler('libgcc-ng') }}{{ gnu_pin }}        # [linux]
+    - {{ compiler('libstdcxx') }}{{ gnu_pin }}        # [linux]
+    - {{ compiler('libstdcxx-ng') }}{{ gnu_pin }}     # [linux]
 {% endif %}
 
 {% if not (osx and arch == 'arm64') %}
@@ -255,6 +264,10 @@ requirements:
     - graphviz
     - tbb
     - tbb-devel
+    - {{ compiler('libgcc') }}{{ gnu_pin }}           # [linux]
+    - {{ compiler('libgcc-ng') }}{{ gnu_pin }}        # [linux]
+    - {{ compiler('libstdcxx') }}{{ gnu_pin }}        # [linux]
+    - {{ compiler('libstdcxx-ng') }}{{ gnu_pin }}     # [linux]
 {% if linux %}
     - xorg-xorgproto
     - xorg-libx11
