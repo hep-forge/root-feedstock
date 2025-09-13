@@ -236,8 +236,7 @@ requirements:
     - libstdcxx={{ gnu_pin }}
     - libgcc-devel_linux-64={{ gnu_pin }}
     - libstdcxx-devel_linux-64={{ gnu_pin }}
-    - _openmp_mutex =*=*_gnu
-    - libgomp
+    - libgomp={{ gnu_pin }}
 
 {% if not (osx and arch == 'arm64') %}
 {% if version < "6.34" %}
@@ -279,8 +278,7 @@ requirements:
     - libstdcxx={{ gnu_pin }}
     - libgcc-devel_linux-64={{ gnu_pin }}
     - libstdcxx-devel_linux-64={{ gnu_pin }}
-    - _openmp_mutex =*=*_gnu
-    - libgomp
+    - libgomp={{ gnu_pin }}
 
   run_constraints:
     - numba >=0.52
