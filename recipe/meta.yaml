@@ -165,7 +165,14 @@ requirements:
     - clangdev {{ clang_version }}.* {{ clang_patches_version }}*
 {% endif %}
 {% endif %}
-
+    - libgcc={{ gnu_pin }}
+    - libgcc-ng={{ gnu_pin }}
+    - libstdcxx={{ gnu_pin }}
+    - libstdcxx-ng={{ gnu_pin }}
+    - libgcc-devel_linux-64={{ gnu_pin }}
+    - libstdcxx-devel_linux-64={{ gnu_pin }}
+    - libgomp={{ gnu_pin }}
+    
   host:
     - {{ compiler('c') }}{{ gnu_pin }}
     - {{ compiler('cxx') }}{{ gnu_pin }}
@@ -228,12 +235,10 @@ requirements:
     # c.f. https://github.com/conda-forge/root-feedstock/pull/292#discussion_r2334082389
     - zeromq * drafts_*
 {% endif %}
-    - libgcc-ng={{ gnu_pin }}
-    - libstdcxx-ng={{ gnu_pin }}
-    - libgcc-ng={{ gnu_pin }}
     - libgcc={{ gnu_pin }}
-    - libstdcxx-ng={{ gnu_pin }}
+    - libgcc-ng={{ gnu_pin }}
     - libstdcxx={{ gnu_pin }}
+    - libstdcxx-ng={{ gnu_pin }}
     - libgcc-devel_linux-64={{ gnu_pin }}
     - libstdcxx-devel_linux-64={{ gnu_pin }}
     - libgomp={{ gnu_pin }}
@@ -270,12 +275,10 @@ requirements:
     - xorg-libxft
     - libglu
 {% endif %}
-    - libgcc-ng={{ gnu_pin }}
-    - libstdcxx-ng={{ gnu_pin }}
-    - libgcc-ng={{ gnu_pin }}
     - libgcc={{ gnu_pin }}
-    - libstdcxx-ng={{ gnu_pin }}
+    - libgcc-ng={{ gnu_pin }}
     - libstdcxx={{ gnu_pin }}
+    - libstdcxx-ng={{ gnu_pin }}
     - libgcc-devel_linux-64={{ gnu_pin }}
     - libstdcxx-devel_linux-64={{ gnu_pin }}
     - libgomp={{ gnu_pin }}
