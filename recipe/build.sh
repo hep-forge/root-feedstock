@@ -1,6 +1,9 @@
 #!/bin/bash
 set -x
 
+echo "Building ROOT version ${ROOT_VERSION} with C++${ROOT_CXX_STANDARD}"
+return;
+
 if command -v sccache &> /dev/null; then
     export CMAKE_C_COMPILER_LAUNCHER=sccache
     export CMAKE_CXX_COMPILER_LAUNCHER=sccache

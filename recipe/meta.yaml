@@ -323,25 +323,21 @@ tests:
       - "jupyter-kernelspec list | grep ' root '"
 {% endif %}
 
-# outputs:
-#   # Meta-package that prevents installing conda-forge::root_base alongside yours
-#   - name: root-guard
-#     noarch: generic
-#     script: |
-#       mkdir -p "${PREFIX}/.meta"
-#       echo "root-guard" > "${PREFIX}/.meta/root-guard"
-#     requirements:
-#       run_constrained:
-#         - root_base ==9999
+outputs:
+  # Meta-package that prevents installing conda-forge::root_base alongside yours
+  - name: root-guard
+    noarch: generic
+    requirements:
+      run_constrained:
+        - root_base ==9999
 
-#   # Meta wrapper that pulls your root plus the guard
-#   - name: root-framework
-#     noarch: generic
-#     requirements:
-#       run:
-#         - {{ environ.get('ANACONDA_PACKAGE', "root")|string|lower }} {{ environ.get('ANACONDA_VERSION', version)|replace("-", ".") }}
-#         - root-guard {{ environ.get('ANACONDA_VERSION', version)|replace("-", ".") }}
-
+  # Meta wrapper that pulls your root plus the guard
+  - name: root-framework
+    noarch: generic
+    requirements:
+      run:
+        - {{ environ.get('ANACONDA_PACKAGE', "root")|string|lower }} {{ environ.get('ANACONDA_VERSION', version)|replace("-", ".") }}
+        - root-guard {{ environ.get('ANACONDA_VERSION', version)|replace("-", ".") }}
 
 about:
   home: https://root.cern/
