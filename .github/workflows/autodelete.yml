@@ -1,9 +1,9 @@
 name: Anaconda Tag Deletion
 
-# on:
-#   delete:
-#     tags:
-#       - '*'
+on:
+  delete:
+    tags:
+      - '*'
 
 jobs:
   anaconda:
