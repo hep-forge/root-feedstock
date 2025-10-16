@@ -1,19 +1,23 @@
-ace:
-- 8.0.2
 c_compiler:
-- vs2019
+- vs2022
 c_stdlib:
 - vs
 cfitsio:
-- 4.3.1
+- 4.6.2
 channel_sources:
 - conda-forge
 channel_targets:
 - conda-forge main
 cxx_compiler:
-- vs2019
+- vs2022
+davix:
+- '0.8'
 fftw:
 - '3'
+fortran_compiler:
+- flang
+fortran_compiler_version:
+- '5'
 freetype:
 - '2'
 gdk_pixbuf:
@@ -21,33 +25,40 @@ gdk_pixbuf:
 giflib:
 - '5.2'
 glew:
-- '2.1'
+- '2.2'
 glib:
 - '2'
 graphviz:
-- '12'
+- '13'
 gsl:
 - '2.7'
 libblas:
 - 3.9.* *netlib
 libcblas:
 - 3.9.* *netlib
-libxml2:
+liblzma_devel:
+- '5'
+libpng:
+- '1.6'
+librsvg:
 - '2'
+libtiff:
+- '4.7'
+libxml2:
+- '2.13'
 lz4_c:
-- 1.9.3
+- '1.10'
 numpy:
-- '1.23'
+- '2'
 openssl:
 - '3'
-pcre2:
-- '10.44'
-pin_run_as_build:
-  python:
-    min_pin: x.x
-    max_pin: x.x
-python:
-- 3.10.* *_cpython
+pcre:
+- '8'
+root_base:
+- 6.32.10
+- 6.34.4
+sqlite:
+- '3'
 target_platform:
 - win-64
 tbb:
@@ -56,14 +67,11 @@ tbb_devel:
 - '2021'
 xrootd:
 - '5'
-xz:
-- '5'
-zip_keys:
-- - python
-  - numpy
+xxhash:
+- 0.8.3
+zeromq:
+- 4.3.5
 zlib:
 - '1'
-zlib_ng:
-- '2.2'
 zstd:
 - '1.5'

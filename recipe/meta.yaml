@@ -4,26 +4,19 @@
     "6.36.04": "65a246d2578d2f04f7ad400a26cfc6c7c9c19878434a3d8f4d0bcf7deec4f2ec"
 } %}
 
-{% set version = environ.get('COMMIT_VERSION', None) %}
-{% set version = version or versions.keys()|first %}
-{% set version = version|string %}
+{% set version = environ.get('COMMIT_VERSION', None) or versions.keys()|first %}
+{% set python_version = {
+    "6.32.16": "3.10",
+    "6.34.10": "3.12",
+    "6.36.04": "3.12"
+} %}
 
 {% set major, minor, patch = version.split('.') | map('int') %}
-
-package:
-  name: {{ environ.get('ANACONDA_PACKAGE', "root")|string|lower }}
-  version: {{ environ.get('ANACONDA_VERSION', version)|replace("-", ".") }}
 
 {% set root_cxx_standard = {
     "6.32.16": "17",
     "6.34.10": "20",
     "6.36.04": "20",
-} %}
-
-{% set python_version = {
-    "6.32.16": "3.10",
-    "6.34.10": "3.12",
-    "6.36.04": "3.12"
 } %}
 
 {% set gnu_versions = {
@@ -52,6 +45,10 @@ package:
 {% set builtin_pyroot = True %}
 {% set builtin_clang = False %}
     
+package:
+  name: {{ environ.get('ANACONDA_PACKAGE', "root")|string|lower }}
+  version: {{ environ.get('ANACONDA_VERSION', version)|replace("-", ".") }}
+
 source:
   url: "https://github.com/root-project/root/archive/refs/tags/v{{ version|replace('.', '-') }}.tar.gz"
   {% if versions.get(version) %}
@@ -85,26 +82,14 @@ source:
     - patches/0001-force-one-modulemap-for-darwin.patch # [osx]
     {% endif %}
 
-outputs:
 
-  # ============================================================
-  # 1. ROOT — actual build of ROOT framework
-  # ============================================================
+
+outputs:
   - name: root
     build:
       number: 0
       string: "py{{ python_version.get(version).replace('.', '') }}_gcc{{ gnu_versions.get(version).replace('.', '') }}"
-      script_env:
-        - ROOT_VERSION={{ version }}
-        - ROOT_VERSION_MAJOR={{ major }}
-        - ROOT_VERSION_MINOR={{ minor }}
-        - ROOT_VERSION_PATCH={{ patch }}
-        - ROOT_CXX_STANDARD={{ root_cxx_standard.get(version) }}
-        - clang_version={{ clang_version }}
-        - clang_patches_version={{ clang_patches_version }}
-        {% if builtin_pyroot %}- ROOT_CONDA_BUILTIN_PYROOT="true" {%- endif %}
-        {% if builtin_clang %}- ROOT_CONDA_BUILTIN_CLANG="true" {%- endif %}
-        {% if "ROOT_CONDA_BUILD_TYPE" in os.environ %}- ROOT_CONDA_BUILD_TYPE {%- endif %}
+      
       run_exports:
         - {{ pin_compatible('root', max_pin='x.x') }}
     
@@ -249,7 +234,6 @@ outputs:
         - libstdcxx-devel_linux-64={{ gnu_pin }}
         - libgomp={{ gnu_pin }}
     
-    {% if not (osx and arch == 'arm64') %}
     {% if version < "6.34" %}
         - llvm {{ clang_version }}.*
         - llvmdev {{ clang_version }}.*
@@ -259,7 +243,6 @@ outputs:
     {% endif %}
         - llvm-openmp {{ clang_version }}.*
         - clangdev {{ clang_version }}.* {{ clang_patches_version }}*
-    {% endif %}
     
       run:
         - python {{ python_version.get(version) }}.* *_cpython
@@ -333,20 +316,9 @@ outputs:
   # 2. ROOT-GUARD — prevent conda-forge root_base
   # ============================================================
   - name: root-guard
-    version: {{ version }}
     build:
       number: 0
       noarch: generic
-    requirements:
-      run_constrained:
-        - root_base <0a0
-        - root <0a0
-    about:
-      summary: "Guard meta-package preventing conda-forge ROOT (root_base) conflicts."
-      license: BSD-3-Clause
-    test:
-      commands:
-        - echo "root-guard installed"
 
   # ============================================================
   # 3. ROOT-FRAMEWORK — meta wrapper for distribution
@@ -355,6 +327,8 @@ outputs:
     version: {{ version }}
     build:
       number: 0
+      run_exports:
+        - root-framework
     requirements:
       run:
         - root {{ version }}
@@ -365,10 +339,6 @@ outputs:
     run_constrained:
       - root_base <0a0
       - root <0a0
-    about:
-      summary: "ROOT Framework (HEP-Forge unified build with solver guard)."
-      license: LGPL-2.1-only
-      home: https://root.cern/
     test:
       commands:
         - root-config --version
