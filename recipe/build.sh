@@ -9,7 +9,7 @@ else
 fi
 
 # rebuild afterimage ./configure script after patch
-cp $BUILD_PREFIX/share/gnuconfig/config.* graf2d/asimage/src/libAfterImage
+cp $BUILD_PREFIX/share/gnuconfig/config.* graf2d/asimage/src/libAfterImage || true
 (cd graf2d/asimage/src/libAfterImage; autoconf)
 
 if [[ "${target_platform}" == "linux-"* ]]; then
