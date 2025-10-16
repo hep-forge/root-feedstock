@@ -86,8 +86,11 @@ source:
     {% endif %}
 
 outputs:
+
+  # ============================================================
+  # 1. ROOT — actual build of ROOT framework
+  # ============================================================
   - name: root
-    version: 
     build:
       number: 0
       string: "py{{ python_version.get(version).replace('.', '') }}_gcc{{ gnu_versions.get(version).replace('.', '') }}"
@@ -326,35 +329,46 @@ outputs:
           - "jupyter-kernelspec list | grep ' root '"
     {% endif %}
 
+  # ============================================================
+  # 2. ROOT-GUARD — prevent conda-forge root_base
+  # ============================================================
   - name: root-guard
-    version: {{ environ.get('ANACONDA_VERSION', version)|replace("-", ".") }}
+    version: {{ version }}
     build:
       number: 0
       noarch: generic
     requirements:
       run_constrained:
         - root_base <0a0
+        - root <0a0
     about:
-      summary: "Guard to prevent conda-forge root_base from entering the environment."
+      summary: "Guard meta-package preventing conda-forge ROOT (root_base) conflicts."
       license: BSD-3-Clause
     test:
       commands:
         - echo "root-guard installed"
 
-   - name: root-framework
-    version: {{ environ.get('ANACONDA_VERSION', version)|replace("-", ".") }}
+  # ============================================================
+  # 3. ROOT-FRAMEWORK — meta wrapper for distribution
+  # ============================================================
+  - name: root-framework
+    version: {{ version }}
     build:
       number: 0
-      run_exports:
-        - root-guard >=1
     requirements:
       run:
-        - root {{ environ.get('ANACONDA_VERSION', version)|replace("-", ".") }}
+        - root {{ version }}
         - root-guard >=1
-        # (Optional)
-        # - xrootd
-        # - graphviz
-        # - jupyter
+    provides:
+      - root
+      - root_base
+    run_constrained:
+      - root_base <0a0
+      - root <0a0
+    about:
+      summary: "ROOT Framework (HEP-Forge unified build with solver guard)."
+      license: LGPL-2.1-only
+      home: https://root.cern/
     test:
       commands:
         - root-config --version
