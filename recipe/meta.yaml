@@ -107,7 +107,7 @@ outputs:
         {% if builtin_clang  %}export ROOT_CONDA_BUILTIN_CLANG="true"{% endif %}
 
         echo "Resolved ROOT_CXX_STANDARD=${ROOT_CXX_STANDARD:-<unset>}"
-        bash build.sh
+#        bash build.sh
       run_exports:
         - {{ pin_compatible('root', max_pin='x.x') }}
     
