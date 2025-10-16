@@ -90,16 +90,24 @@ outputs:
       number: 0
       string: "py{{ python_version.get(version).replace('.', '') }}_gcc{{ gnu_versions.get(version).replace('.', '') }}"
       script_env:
-        - ROOT_VERSION={{ version }}
-        - ROOT_VERSION_MAJOR={{ major }}
-        - ROOT_VERSION_MINOR={{ minor }}
-        - ROOT_VERSION_PATCH={{ patch }}
-        - ROOT_CXX_STANDARD={{ root_cxx_standard.get(version) }}
-        - clang_version={{ clang_version }}
-        - clang_patches_version={{ clang_patches_version }}
-        {% if builtin_pyroot %}- ROOT_CONDA_BUILTIN_PYROOT="true" {%- endif %}
-        {% if builtin_clang %}- ROOT_CONDA_BUILTIN_CLANG="true" {%- endif %}
-        {% if "ROOT_CONDA_BUILD_TYPE" in os.environ %}- ROOT_CONDA_BUILD_TYPE {%- endif %}
+        {% if builtin_pyroot %}- ROOT_CONDA_BUILTIN_PYROOT{%- endif %}
+        {% if builtin_clang  %}- ROOT_CONDA_BUILTIN_CLANG {%- endif %}
+        {% if "ROOT_CONDA_BUILD_TYPE" in os.environ %}- ROOT_CONDA_BUILD_TYPE{%- endif %}
+      script: |
+        set -euo pipefail
+        # Define variables here (Jinja evaluated by conda-build)
+        export ROOT_VERSION="{{ version }}"
+        export ROOT_VERSION_MAJOR="{{ major }}"
+        export ROOT_VERSION_MINOR="{{ minor }}"
+        export ROOT_VERSION_PATCH="{{ patch }}"
+        export ROOT_CXX_STANDARD="{{ root_cxx_standard.get(major ~ '.' ~ minor, root_cxx_standard.get(version, '')) }}"
+        export clang_version="{{ clang_version }}"
+        export clang_patches_version="{{ clang_patches_version }}"
+        {% if builtin_pyroot %}export ROOT_CONDA_BUILTIN_PYROOT="true"{% endif %}
+        {% if builtin_clang  %}export ROOT_CONDA_BUILTIN_CLANG="true"{% endif %}
+
+        echo "Resolved ROOT_CXX_STANDARD=${ROOT_CXX_STANDARD:-<unset>}"
+        bash build.sh
       run_exports:
         - {{ pin_compatible('root', max_pin='x.x') }}
     
