@@ -159,6 +159,7 @@ outputs:
         - libgcc-devel_linux-64={{ gnu_pin }}
         - libstdcxx-devel_linux-64={{ gnu_pin }}
         - libgomp={{ gnu_pin }}
+        - sccache
         
       host:
         - {{ compiler('c') }}{{ gnu_pin }}
