@@ -89,7 +89,17 @@ outputs:
     build:
       number: 0
       string: "py{{ python_version.get(version).replace('.', '') }}_gcc{{ gnu_versions.get(version).replace('.', '') }}"
-      
+      script_env:
+        - ROOT_VERSION={{ version }}
+        - ROOT_VERSION_MAJOR={{ major }}
+        - ROOT_VERSION_MINOR={{ minor }}
+        - ROOT_VERSION_PATCH={{ patch }}
+        - ROOT_CXX_STANDARD={{ root_cxx_standard.get(version) }}
+        - clang_version={{ clang_version }}
+        - clang_patches_version={{ clang_patches_version }}
+        {% if builtin_pyroot %}- ROOT_CONDA_BUILTIN_PYROOT="true" {%- endif %}
+        {% if builtin_clang %}- ROOT_CONDA_BUILTIN_CLANG="true" {%- endif %}
+        {% if "ROOT_CONDA_BUILD_TYPE" in os.environ %}- ROOT_CONDA_BUILD_TYPE {%- endif %}
       run_exports:
         - {{ pin_compatible('root', max_pin='x.x') }}
     
