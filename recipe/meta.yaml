@@ -316,7 +316,7 @@ outputs:
   # 2. ROOT-GUARD — prevent conda-forge root_base
   # ============================================================
   - name: root-guard
-    version: ""
+    version: "1"
     build:
       number: 0
       noarch: generic
@@ -325,7 +325,7 @@ outputs:
   # 3. ROOT-FRAMEWORK — meta wrapper for distribution
   # ============================================================
   - name: root-framework
-    version: {{ major }}.{{ minor }}
+    version: "{{ major }}.{{ minor }}"
     build:
       number: 0
       run_exports:
