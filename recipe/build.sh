@@ -431,6 +431,7 @@ if [[ "${target_platform}" != osx* ]]; then
 fi
 
 # Now we can actually run CMake
+echo cmake $CMAKE_ARGS "${CMAKE_PLATFORM_FLAGS[@]}" ${SRC_DIR}
 cmake $CMAKE_ARGS "${CMAKE_PLATFORM_FLAGS[@]}" ${SRC_DIR}
 set +e
 
