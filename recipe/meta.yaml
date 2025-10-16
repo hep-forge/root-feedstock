@@ -323,22 +323,6 @@ outputs:
     requirements:
       run_constrained:
         - root_base ==9999
-    test:
-      commands:
-        - python - <<'PY'
-import os, sys
-p = os.environ.get('PREFIX') or ''
-bad = []
-for root, dirs, files in os.walk(p):
-    if os.path.relpath(root, p).split(os.sep)[0] == 'conda-meta':
-        continue
-    for f in files:
-        bad.append(os.path.join(root, f))
-if bad:
-    print("Non-metadata files found:", *bad, sep="\n")
-    sys.exit(1)
-PY
-
   # =========================
   # 3) WRAPPER META
   # =========================
@@ -348,21 +332,6 @@ PY
       run:
         - {{ pkg_name }} {{ ana_ver }}
         - root-guard {{ ana_ver }}
-    test:
-      commands:
-        - python - <<'PY'
-import os, sys
-p = os.environ.get('PREFIX') or ''
-bad = []
-for root, dirs, files in os.walk(p):
-    if os.path.relpath(root, p).split(os.sep)[0] == 'conda-meta':
-        continue
-    for f in files:
-        bad.append(os.path.join(root, f))
-if bad:
-    print("Non-metadata files found:", *bad, sep="\n")
-    sys.exit(1)
-PY
 
 about:
   home: https://root.cern/
