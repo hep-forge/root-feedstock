@@ -132,7 +132,9 @@ outputs:
     {% if version >= "6.34" %}
         - zeromq
     {% endif %}
-        - gnuconfig # [linux]
+    {% if linux or osx %}
+        - gnuconfig
+    {% endif %}
     {% if build_platform != target_platform %}
         - cross-python_{{ target_platform }}
         - python {{ python_version.get(version) }}.* *_cpython
@@ -142,15 +144,18 @@ outputs:
         - zstd
         - freetype
         - liblzma-devel
+    {% if not osx %}
     {% if version < "6.34" %}
-        - llvm {{ clang_version }}.* # [linux]
-        - llvmdev {{ clang_version }}.* # [linux]
+        - llvm {{ clang_version }}.*
+        - llvmdev {{ clang_version }}.*
     {% else %}
-        - llvm {{ clang_version }}.* {{ clang_patches_version }}* # [linux]
-        - llvmdev {{ clang_version }}.* {{ clang_patches_version }}* # [linux]
+        - llvm {{ clang_version }}.* {{ clang_patches_version }}*
+        - llvmdev {{ clang_version }}.* {{ clang_patches_version }}*
     {% endif %}
-        - llvm-openmp {{ clang_version }}.* # [linux]
-        - clangdev {{ clang_version }}.* {{ clang_patches_version }}* # [linux]
+        - llvm-openmp {{ clang_version }}.*
+        - clangdev {{ clang_version }}.* {{ clang_patches_version }}*
+    {% endif %}
+    {% endif %}
         - libgcc={{ gnu_pin }}
         - libgcc-ng={{ gnu_pin }}
         - libstdcxx={{ gnu_pin }}
@@ -165,16 +170,18 @@ outputs:
         - {{ stdlib("c") }}
         - libblas
         - libcblas
-        - libglu # [linux]
-        - libgl-devel # [linux]
-        - xorg-xorgproto # [linux]
-        - xorg-libx11 # [linux]
-        - xorg-libxau # [linux]
-        - xorg-libxcursor # [linux]
-        - xorg-libxext # [linux]
-        - xorg-libxfixes # [linux]
-        - xorg-libxft # [linux]
-        - xorg-libxpm # [linux]
+    {% if linux %}
+        - libglu
+        - libgl-devel
+        - xorg-xorgproto
+        - xorg-libx11
+        - xorg-libxau
+        - xorg-libxcursor
+        - xorg-libxext
+        - xorg-libxfixes
+        - xorg-libxft
+        - xorg-libxpm
+    {% endif %}
         - cfitsio
         - davix
         - fftw
@@ -249,12 +256,14 @@ outputs:
         - graphviz
         - tbb
         - tbb-devel
-        - xorg-xorgproto # [linux]
-        - xorg-libx11 # [linux]
-        - xorg-libxext # [linux]
-        - xorg-libxpm # [linux]
-        - xorg-libxft # [linux]
-        - libglu # [linux]
+    {% if linux %}
+        - xorg-xorgproto
+        - xorg-libx11
+        - xorg-libxext
+        - xorg-libxpm
+        - xorg-libxft
+        - libglu
+    {% endif %}
         - libgcc={{ gnu_pin }}
         - libgcc-ng={{ gnu_pin }}
         - libstdcxx={{ gnu_pin }}
