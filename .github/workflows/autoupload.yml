@@ -3,8 +3,8 @@ name: Anaconda Build & Upload
 on:
   push:
 # (for debugging)
-    branches:
-      - '**'
+    # branches:
+    #   - '**'
     tags:
       - '*'
 
