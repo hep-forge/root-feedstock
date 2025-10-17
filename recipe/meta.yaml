@@ -321,6 +321,7 @@ outputs:
   # =========================
   - name: root-guard
     noarch: generic
+    script: "{{ POSIX }} true"
     requirements:
       run_constrained:
         - root_base ==9999
@@ -329,6 +330,7 @@ outputs:
   # =========================
   - name: root-framework
     noarch: generic
+    script: "{{ POSIX }} true"
     requirements:
       run:
         - {{ pkg_name }} {{ ana_ver }}
