@@ -83,7 +83,25 @@ source:
     - patches/0001-force-one-modulemap-for-darwin.patch # [osx]
     {% endif %}
 
-# IMPORTANT: no top-level build: section; keep env-sensitive bits under the real output.
+# Only keep script_env at top-level; make every entry self-contained.
+build:
+  script_env:
+    - ROOT_VERSION={{ version }}
+    - ROOT_VERSION_MAJOR={{ major }}
+    - ROOT_VERSION_MINOR={{ minor }}
+    - ROOT_VERSION_PATCH={{ patch }}
+    - ROOT_CXX_STANDARD={{ root_cxx_standard.get(version) }}
+    - clang_version={{ clang_version }}
+    - clang_patches_version={{ clang_patches_version }}
+    - ROOT_CONDA_BUILTIN_PYROOT={{ "true" if builtin_pyroot else "false" }}
+    - ROOT_CONDA_BUILTIN_CLANG={{ "true" if builtin_clang else "false" }}
+    - ROOT_CONDA_BUILD_TYPE={{ environ.get("ROOT_CONDA_BUILD_TYPE","") }}
+
+# Avoid any top-level requirements/run_exports; per-output only.
+requirements:
+  build: []
+  host:  []
+  run:   []
 
 requirements:  # (keep empty at top-level to avoid bleed; per-output requirements defined below)
   build: []
@@ -100,17 +118,6 @@ outputs:
       string: "py{{ python_version.get(version).replace('.', '') }}_gcc{{ gnu_versions.get(version).replace('.', '') }}"
       run_exports:
         - {{ pin_compatible(pkg_name, max_pin='x.x') }}
-      script_env:
-        - ROOT_VERSION={{ version }}
-        - ROOT_VERSION_MAJOR={{ major }}
-        - ROOT_VERSION_MINOR={{ minor }}
-        - ROOT_VERSION_PATCH={{ patch }}
-        - ROOT_CXX_STANDARD={{ root_cxx_standard.get(version) }}
-        - clang_version={{ clang_version }}
-        - clang_patches_version={{ clang_patches_version }}
-        {% if builtin_pyroot %}- ROOT_CONDA_BUILTIN_PYROOT="true" {%- endif %}
-        {% if builtin_clang  %}- ROOT_CONDA_BUILTIN_CLANG="true"  {%- endif %}
-        {% if "ROOT_CONDA_BUILD_TYPE" in os.environ %}- ROOT_CONDA_BUILD_TYPE {%- endif %}
       ignore_prefix_files:
         - lib/*.pcm
         - etc/allDict.cxx.pch
