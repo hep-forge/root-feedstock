@@ -108,16 +108,16 @@ outputs:
   # =========================
   - name: {{ pkg_name }}
     version: {{ ana_ver }}
+    files:
+      include:
+        - "**"
+      exclude:
+        - LICENSE
+        - README/**
     build:
       string: "py{{ python_version.get(version).replace('.', '') }}_gcc{{ gnu_versions.get(version).replace('.', '') }}"
       run_exports:
         - {{ pin_compatible(pkg_name, max_pin='x.x') }}
-      files:
-        include:
-          - "**"
-        exclude:
-          - LICENSE
-          - README/**
       ignore_prefix_files:
         - lib/*.pcm
         - etc/allDict.cxx.pch
