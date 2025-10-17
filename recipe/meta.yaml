@@ -327,7 +327,7 @@ outputs:
   # =========================
   - name: root-guard
     noarch: generic
-    script: "bash -c true"
+    script: noop.sh
     requirements:
       run_constrained:
         - root_base ==9999
@@ -336,7 +336,7 @@ outputs:
   # =========================
   - name: root-framework
     noarch: generic
-    script: "bash -c true"
+    script: noop.sh
     requirements:
       run:
         - {{ pkg_name }} {{ ana_ver }}
