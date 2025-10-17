@@ -97,12 +97,6 @@ build:
     - ROOT_CONDA_BUILTIN_CLANG={{ "true" if builtin_clang else "false" }}
     - ROOT_CONDA_BUILD_TYPE={{ environ.get("ROOT_CONDA_BUILD_TYPE","") }}
 
-# Avoid any top-level requirements/run_exports; per-output only.
-requirements:
-  build: []
-  host:  []
-  run:   []
-
 requirements:  # (keep empty at top-level to avoid bleed; per-output requirements defined below)
   build: []
   host: []
