@@ -327,7 +327,7 @@ outputs:
   # =========================
   - name: root-guard
     noarch: generic
-    script: "echo 'Nothing to do.'"
+    script: "bash -c true"
     requirements:
       run_constrained:
         - root_base ==9999
@@ -336,7 +336,7 @@ outputs:
   # =========================
   - name: root-framework
     noarch: generic
-    script: "echo 'Nothing to do.'"
+    script: "bash -c true"
     requirements:
       run:
         - {{ pkg_name }} {{ ana_ver }}
