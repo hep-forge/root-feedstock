@@ -326,6 +326,7 @@ outputs:
   # 2) PURE META GUARD (EMPTY)
   # =========================
   - name: root-guard
+    version: {{ major }}
     noarch: generic
     script: noop.sh
     requirements:
@@ -335,12 +336,13 @@ outputs:
   # 3) WRAPPER META
   # =========================
   - name: root-framework
+    version: {{ major }}.{{ minor }}
     noarch: generic
     script: noop.sh
     requirements:
       run:
-        - {{ pkg_name }} {{ ana_ver }}
-        - root-guard {{ ana_ver }}
+        - {{ pkg_name }} {{ major }}.{{ minor }}*
+        - root-guard {{ major }}
 
 about:
   home: https://root.cern/
