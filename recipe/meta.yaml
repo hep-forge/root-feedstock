@@ -114,8 +114,6 @@ outputs:
       exclude:
         - LICENSE
         - README/**
-        - lib/*.pcm
-        - etc/allDict.cxx.pch
     build:
       string: "py{{ python_version.get(version).replace('.', '') }}_gcc{{ gnu_versions.get(version).replace('.', '') }}"
       run_exports:
