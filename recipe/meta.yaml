@@ -93,9 +93,9 @@ build:
     - ROOT_CXX_STANDARD={{ root_cxx_standard.get(version) }}
     - clang_version={{ clang_version }}
     - clang_patches_version={{ clang_patches_version }}
-    {% if builtin_pyroot %}- ROOT_CONDA_BUILTIN_PYROOT="true" {%- endif %}
-    {% if builtin_clang %}- ROOT_CONDA_BUILTIN_CLANG="true" {%- endif %}
-    {% if "ROOT_CONDA_BUILD_TYPE" in os.environ %}- ROOT_CONDA_BUILD_TYPE {%- endif %}
+    - ROOT_CONDA_BUILTIN_PYROOT={{ "true" if builtin_pyroot else "false" }}
+    - ROOT_CONDA_BUILTIN_CLANG={{ "true" if builtin_clang else "false" }}
+    - ROOT_CONDA_BUILD_TYPE={{ environ.get("ROOT_CONDA_BUILD_TYPE","") }}
 
 requirements:  # (keep empty at top-level to avoid bleed; per-output requirements defined below)
   build: []
