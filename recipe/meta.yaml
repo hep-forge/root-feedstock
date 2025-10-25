@@ -110,7 +110,7 @@ outputs:
     version: {{ ana_ver }}
     files:
       include:
-        - "**"
+        - **
       exclude:
         - LICENSE
         - README/**
