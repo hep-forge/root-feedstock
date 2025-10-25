@@ -85,7 +85,6 @@ source:
 
 # Only keep script_env at top-level; make every entry self-contained.
 build:
-  number: 0
   script_env:
     - ROOT_VERSION={{ version }}
     - ROOT_VERSION_MAJOR={{ major }}
@@ -97,32 +96,7 @@ build:
     {% if builtin_pyroot %}- ROOT_CONDA_BUILTIN_PYROOT="true" {%- endif %}
     {% if builtin_clang %}- ROOT_CONDA_BUILTIN_CLANG="true" {%- endif %}
     {% if "ROOT_CONDA_BUILD_TYPE" in os.environ %}- ROOT_CONDA_BUILD_TYPE {%- endif %}
-  run_exports:
-    - {{ pin_compatible('root', max_pin='x.x') }}
 
-    # Linux GCC C/C++/Fortran runtimes: pin major only (ABI stable per major)
-    - {{ pin_compatible('libgcc-ng',     max_pin='x') }}        # [linux]
-    - {{ pin_compatible('libstdcxx-ng',  max_pin='x') }}        # [linux]
-
-    # C stdlib macro (cross-platform)
-    - {{ stdlib("c") }}
-      
-  ignore_prefix_files:
-    - lib/*.pcm
-    - etc/allDict.cxx.pch
-  ignore_run_exports_from:
-    - clangdev
-    - xorg-libx11
-    - xorg-libxft
-    - xorg-libxext
-    - xorg-libxpm
-    - xorg-libxrender
-    - xorg-libxt
-    - gsl
-    - zlib
-    - davix
-    - cfitsio
-    
 requirements:  # (keep empty at top-level to avoid bleed; per-output requirements defined below)
   build: []
   host: []
@@ -141,9 +115,10 @@ outputs:
         - LICENSE
         - README/**
     build:
+      number: 0
       string: "py{{ python_version.get(version).replace('.', '') }}_gcc{{ gnu_versions.get(version).replace('.', '') }}"
       run_exports:
-        - {{ pin_compatible('root', max_pin='x.x') }}
+        - {{ pin_compatible('pkg_name', max_pin='x.x') }}
     
         # Linux GCC C/C++/Fortran runtimes: pin major only (ABI stable per major)
         - {{ pin_compatible('libgcc-ng',     max_pin='x') }}        # [linux]
@@ -167,6 +142,7 @@ outputs:
         - zlib
         - davix
         - cfitsio
+
     script: build.sh
     requirements:
       build:
