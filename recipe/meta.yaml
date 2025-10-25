@@ -110,7 +110,7 @@ outputs:
     version: {{ ana_ver }}
     files:
       include:
-        - **
+        - "**"
       exclude:
         - LICENSE
         - README/**
@@ -127,8 +127,8 @@ outputs:
         # C stdlib macro (cross-platform)
         - {{ stdlib("c") }}
 #      ignore_prefix_files:
-#        - lib/*.pcm
-#        - etc/allDict.cxx.pch
+#       - lib/*.pcm
+#       - etc/allDict.cxx.pch
       ignore_run_exports_from:
         - clangdev
         - xorg-libx11
