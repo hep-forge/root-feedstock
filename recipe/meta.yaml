@@ -4,10 +4,15 @@
     "6.36.04": "65a246d2578d2f04f7ad400a26cfc6c7c9c19878434a3d8f4d0bcf7deec4f2ec"
 } %}
 
-{% set version = (environ.get('COMMIT_VERSION') or (versions.keys()|list)[0]) | string %}
+{% set version = environ.get('COMMIT_VERSION', None) %}
+{% set version = version or versions.keys()|first %}
+{% set version = version|string %}
+
 {% set major, minor, patch = version.split('.') | map('int') %}
-{% set pkg_name = (environ.get('ANACONDA_PACKAGE', "root")|string|lower) %}
-{% set ana_ver  = (environ.get('ANACONDA_VERSION', version)|replace("-", ".")) %}
+
+package:
+  name: {{ environ.get('ANACONDA_PACKAGE', "root")|string|lower }}
+  version: {{ environ.get('ANACONDA_VERSION', version)|replace("-", ".") }}
 
 {% set root_cxx_standard = {
     "6.32.16": "17",
@@ -45,12 +50,8 @@
 {% set clang_patches_version = "root_"+(clang_patches.get(version)) %}
 
 {% set builtin_pyroot = True %}
-{% set builtin_clang  = False %}
-
-package:
-  name: {{ pkg_name }}
-  version: {{ ana_ver }}
-
+{% set builtin_clang = False %}
+    
 source:
   url: "https://github.com/root-project/root/archive/refs/tags/v{{ version|replace('.', '-') }}.tar.gz"
   {% if versions.get(version) %}
@@ -67,6 +68,7 @@ source:
     - patches/0002-Remove-cocoa-afterimage-overrides.patch # [osx]
     - patches/0001-Detect-which-ar-binary-should-be-used-to-build-libAf.patch
     - patches/0001-Don-t-include-RootCPack.patch
+    # --- Conditionally applied patches ---
     {% if version < "6.36" %}
     - patches/0001-Enforce-fail-on-missing-with-afterimage-dependencies.patch
     - patches/0001-Hacks.patch
@@ -83,8 +85,9 @@ source:
     - patches/0001-force-one-modulemap-for-darwin.patch # [osx]
     {% endif %}
 
-# Only keep script_env at top-level; make every entry self-contained.
 build:
+  number: 0
+  string: "py{{ python_version.get(version).replace('.', '') }}_gcc{{ gnu_versions.get(version).replace('.', '') }}"
   script_env:
     - ROOT_VERSION={{ version }}
     - ROOT_VERSION_MAJOR={{ major }}
@@ -96,264 +99,238 @@ build:
     {% if builtin_pyroot %}- ROOT_CONDA_BUILTIN_PYROOT="true" {%- endif %}
     {% if builtin_clang %}- ROOT_CONDA_BUILTIN_CLANG="true" {%- endif %}
     {% if "ROOT_CONDA_BUILD_TYPE" in os.environ %}- ROOT_CONDA_BUILD_TYPE {%- endif %}
+  run_exports:
+    - {{ pin_compatible('root', max_pin='x.x') }}
 
-requirements:  # (keep empty at top-level to avoid bleed; per-output requirements defined below)
-  build: []
-  host: []
-  run: []
+    # Linux GCC C/C++/Fortran runtimes: pin major only (ABI stable per major)
+    - {{ pin_compatible('libgcc-ng',     max_pin='x') }}        # [linux]
+    - {{ pin_compatible('libstdcxx-ng',  max_pin='x') }}        # [linux]
 
-outputs:
-  # =========================
-  # 1) REAL ROOT PACKAGE
-  # =========================
-  - name: {{ pkg_name }}
-    version: {{ ana_ver }}
-    files:
-      include:
-        - "**"
-      exclude:
-        - LICENSE
-        - README/**
-        - lib/*.pcm
-        - etc/allDict.cxx.pch
-    build:
-      string: "py{{ python_version.get(version).replace('.', '') }}_gcc{{ gnu_versions.get(version).replace('.', '') }}"
-      run_exports:
-        - {{ pin_compatible(pkg_name, max_pin='x.x') }}
-      ignore_prefix_files:
-        - lib/*.pcm
-        - etc/allDict.cxx.pch
-      ignore_run_exports_from:
-        - clangdev
-        - xorg-libx11
-        - xorg-libxft
-        - xorg-libxext
-        - xorg-libxpm
-        - xorg-libxrender
-        - xorg-libxt
-        - gsl
-        - zlib
-        - davix
-        - cfitsio
-    script: build.sh
-    requirements:
-      build:
-        - {{ compiler('c') }}{{ gnu_pin }}
-        - {{ compiler('cxx') }}{{ gnu_pin }}
-        - {{ compiler('fortran') }}{{ gnu_pin }}
-        - {{ stdlib("c") }}
-        - autoconf
-        - cmake
-        - git
-        - pkg-config
-        - sed
-        - make
-        - ninja
-        {% if version >= "6.34" %}
-        - zeromq
-        {% endif %}
-        {% if linux or osx %}
-        - gnuconfig
-        {% endif %}
-        {% if build_platform != target_platform %}
-        - cross-python_{{ target_platform }}
-        - python {{ python_version.get(version) }}.* *_cpython
-        - numpy
-        - xxhash
-        - zlib
-        - zstd
-        - freetype
-        - liblzma-devel
-        {% if not osx %}
-        {% if version < "6.34" %}
-        - llvm {{ clang_version }}.*
-        - llvmdev {{ clang_version }}.*
-        {% else %}
-        - llvm {{ clang_version }}.* {{ clang_patches_version }}*
-        - llvmdev {{ clang_version }}.* {{ clang_patches_version }}*
-        {% endif %}
-        - llvm-openmp {{ clang_version }}.*
-        - clangdev {{ clang_version }}.* {{ clang_patches_version }}*
-        {% endif %}
-        {% endif %}
-        - libgcc={{ gnu_pin }}
-        - libgcc-ng={{ gnu_pin }}
-        - libstdcxx={{ gnu_pin }}
-        - libstdcxx-ng={{ gnu_pin }}
-        - libgcc-devel_linux-64={{ gnu_pin }}
-        - libstdcxx-devel_linux-64={{ gnu_pin }}
-        - libgomp={{ gnu_pin }}
-      host:
-        - {{ compiler('c') }}{{ gnu_pin }}
-        - {{ compiler('cxx') }}{{ gnu_pin }}
-        - {{ stdlib("c") }}
-        - libblas
-        - libcblas
-        {% if linux %}
-        - libglu
-        - libgl-devel
-        - xorg-xorgproto
-        - xorg-libx11
-        - xorg-libxau
-        - xorg-libxcursor
-        - xorg-libxext
-        - xorg-libxfixes
-        - xorg-libxft
-        - xorg-libxpm
-        {% endif %}
-        - cfitsio
-        - davix
-        - fftw
-        - freetype
-        - ftgl
-        - gdk-pixbuf
-        - giflib
-        - glew
-        - glib
-        - gl2ps
-        - graphviz
-        - gsl
-        - gtest
-        - libpng
-        - librsvg
-        - libtiff
-        - libxml2
-        - lz4-c
-        - nlohmann_json
-        - openssl
-        - pcre
-        - pythia
-        - sqlite
-        - tbb
-        - tbb-devel
-        - vector-classes
-        - vdt
-        - python {{ python_version.get(version) }}.* *_cpython
-        - numpy
-        - xrootd
-        - liblzma-devel
-        - xxhash
-        - zlib
-        - zstd
-        {% if version < "6.34" %}
-        - cppzmq
-        - zeromq
-        - zeromq * drafts_*
-        {% endif %}
-        - libgcc={{ gnu_pin }}
-        - libgcc-ng={{ gnu_pin }}
-        - libstdcxx={{ gnu_pin }}
-        - libstdcxx-ng={{ gnu_pin }}
-        - libgcc-devel_linux-64={{ gnu_pin }}
-        - libstdcxx-devel_linux-64={{ gnu_pin }}
-        - libgomp={{ gnu_pin }}
-        {% if not (osx and arch == 'arm64') %}
-        {% if version < "6.34" %}
-        - llvm {{ clang_version }}.*
-        - llvmdev {{ clang_version }}.*
-        {% else %}
-        - llvm {{ clang_version }}.* {{ clang_patches_version }}*
-        - llvmdev {{ clang_version }}.* {{ clang_patches_version }}*
-        {% endif %}
-        - llvm-openmp {{ clang_version }}.*
-        - clangdev {{ clang_version }}.* {{ clang_patches_version }}*
-        {% endif %}
-      run:
-        - python {{ python_version.get(version) }}.* *_cpython
-        - numpy
-        - {{ compiler('c') }}{{ gnu_pin }}
-        - {{ compiler('cxx') }}{{ gnu_pin }}
-        - {{ stdlib("c") }}
-        - xxhash
-        - nlohmann_json
-        - cffi
-        - graphviz
-        - tbb
-        - tbb-devel
-        {% if linux %}
-        - xorg-xorgproto
-        - xorg-libx11
-        - xorg-libxext
-        - xorg-libxpm
-        - xorg-libxft
-        - libglu
-        {% endif %}
-        - libgcc={{ gnu_pin }}
-        - libgcc-ng={{ gnu_pin }}
-        - libstdcxx={{ gnu_pin }}
-        - libstdcxx-ng={{ gnu_pin }}
-        - libgcc-devel_linux-64={{ gnu_pin }}
-        - libstdcxx-devel_linux-64={{ gnu_pin }}
-        - libgomp={{ gnu_pin }}
-      run_constraints:
-        - numba >=0.52
-        - cling ==9999
-        - root5 ==9999
-        - afterimage ==9999
-    {% if version < "6.36" %}
-    test:
-      files:
+    # C stdlib macro (cross-platform)
+    - {{ stdlib("c") }}
+      
+  ignore_prefix_files:
+    - lib/*.pcm
+    - etc/allDict.cxx.pch
+  ignore_run_exports_from:
+    - clangdev
+    - xorg-libx11
+    - xorg-libxft
+    - xorg-libxext
+    - xorg-libxpm
+    - xorg-libxrender
+    - xorg-libxt
+    - gsl
+    - zlib
+    - davix
+    - cfitsio
+
+requirements:
+  build:
+    - {{ compiler('c') }}{{ gnu_pin }}
+    - {{ compiler('cxx') }}{{ gnu_pin }}
+    - {{ compiler('fortran') }}{{ gnu_pin }}
+    - {{ stdlib("c") }}
+    - autoconf
+    - cmake
+    - git
+    - pkg-config
+    - sed
+    - make
+    - ninja
+{% if version >= "6.34" %}
+    - zeromq
+{% endif %}
+{% if linux or osx %}
+    - gnuconfig
+{% endif %}
+{% if build_platform != target_platform %}
+    - cross-python_{{ target_platform }}
+    - python {{ python_version.get(version) }}.* *_cpython
+    - numpy
+    - xxhash
+    - zlib
+    - zstd
+    - freetype
+    - liblzma-devel
+{% if not osx %}
+{% if version < "6.34" %}
+    - llvm {{ clang_version }}.*
+    - llvmdev {{ clang_version }}.*
+{% else %}
+    - llvm {{ clang_version }}.* {{ clang_patches_version }}*
+    - llvmdev {{ clang_version }}.* {{ clang_patches_version }}*
+{% endif %}
+    - llvm-openmp {{ clang_version }}.*
+    - clangdev {{ clang_version }}.* {{ clang_patches_version }}*
+{% endif %}
+{% endif %}
+    - libgcc={{ gnu_pin }}
+    - libgcc-ng={{ gnu_pin }}
+    - libstdcxx={{ gnu_pin }}
+    - libstdcxx-ng={{ gnu_pin }}
+    - libgcc-devel_linux-64={{ gnu_pin }}
+    - libstdcxx-devel_linux-64={{ gnu_pin }}
+    - libgomp={{ gnu_pin }}
+    
+  host:
+    - {{ compiler('c') }}{{ gnu_pin }}
+    - {{ compiler('cxx') }}{{ gnu_pin }}
+    - {{ stdlib("c") }}
+    - libblas
+    - libcblas
+{% if linux %}
+    - libglu
+    - libgl-devel
+    - xorg-xorgproto
+    - xorg-libx11
+    - xorg-libxau
+    - xorg-libxcursor
+    - xorg-libxext
+    - xorg-libxfixes
+    - xorg-libxft
+    - xorg-libxpm
+{% endif %}
+    - cfitsio
+    - davix
+    - fftw
+    - freetype
+    - ftgl
+    - gdk-pixbuf
+    - giflib
+    - glew
+    - glib
+    - gl2ps
+    - graphviz
+    - gsl
+    - gtest
+    - libpng
+    - librsvg
+    - libtiff
+    - libxml2
+    - lz4-c
+    - nlohmann_json
+    - openssl
+    - pcre
+    - pythia
+    - sqlite
+    - tbb
+    - tbb-devel
+    - vector-classes
+    - vdt
+    - python {{ python_version.get(version) }}.* *_cpython
+    - numpy
+    - xrootd
+    - liblzma-devel
+    - xxhash
+    - zlib
+    - zstd
+{% if version < "6.34" %}
+    # Required for roofit_multiprocess
+    - cppzmq
+    # Required zmq_ppoll API added in v4.3.5
+    - zeromq
+    # Need to request drafts API
+    # Note that zeromq and zeromq * drafts_* are both required
+    # c.f. https://github.com/conda-forge/root-feedstock/pull/292#discussion_r2334082389
+    - zeromq * drafts_*
+{% endif %}
+    - libgcc={{ gnu_pin }}
+    - libgcc-ng={{ gnu_pin }}
+    - libstdcxx={{ gnu_pin }}
+    - libstdcxx-ng={{ gnu_pin }}
+    - libgcc-devel_linux-64={{ gnu_pin }}
+    - libstdcxx-devel_linux-64={{ gnu_pin }}
+    - libgomp={{ gnu_pin }}
+
+{% if not (osx and arch == 'arm64') %}
+{% if version < "6.34" %}
+    - llvm {{ clang_version }}.*
+    - llvmdev {{ clang_version }}.*
+{% else %}
+    - llvm {{ clang_version }}.* {{ clang_patches_version }}*
+    - llvmdev {{ clang_version }}.* {{ clang_patches_version }}*
+{% endif %}
+    - llvm-openmp {{ clang_version }}.*
+    - clangdev {{ clang_version }}.* {{ clang_patches_version }}*
+{% endif %}
+
+  run:
+    - python {{ python_version.get(version) }}.* *_cpython
+    - numpy
+    - {{ compiler('c') }}{{ gnu_pin }}
+    - {{ compiler('cxx') }}{{ gnu_pin }}
+    - {{ stdlib("c") }}
+    - xxhash
+    - nlohmann_json
+    - cffi
+    - graphviz
+    - tbb
+    - tbb-devel
+{% if linux %}
+    - xorg-xorgproto
+    - xorg-libx11
+    - xorg-libxext
+    - xorg-libxpm
+    - xorg-libxft
+    - libglu
+{% endif %}
+    - libgcc={{ gnu_pin }}
+    - libgcc-ng={{ gnu_pin }}
+    - libstdcxx={{ gnu_pin }}
+    - libstdcxx-ng={{ gnu_pin }}
+    - libgcc-devel_linux-64={{ gnu_pin }}
+    - libstdcxx-devel_linux-64={{ gnu_pin }}
+    - libgomp={{ gnu_pin }}
+
+  run_constraints:
+    - numba >=0.52
+    - cling ==9999
+    - root5 ==9999
+    - afterimage ==9999
+
+{% if version < "6.36" %}
+test:
+  files:
+    - test.cpp
+  commands:
+    - root -l -b -q -x
+    - root -l -b -q -x test.cpp
+    - root -b -l -q -x -e '2+3; 0'
+    - root -b -l -q -x -e 'gSystem->LoadAllLibraries(); 0'
+    - root -b -l -q -x -e 'gStyle->SetCanvasPreferGL(kTRUE); c = new TCanvas(); if (!c->UseGL()) { throw std::runtime_error("OpenGL does not appear to be working"); }'
+    - root -b -l -q -x "${PREFIX}/tutorials/tree/run_h1analysis.C"
+{% else %}
+tests:
+  - python:
+      imports:
+        - ROOT
+        - JupyROOT
+      pip_check: false
+  - files:
+      recipe:
         - test.cpp
-      commands:
-        - root -l -b -q -x
-        - root -l -b -q -x test.cpp
-        - root -b -l -q -x -e '2+3; 0'
-        - root -b -l -q -x -e 'gSystem->LoadAllLibraries(); 0'
-        - root -b -l -q -x -e 'gStyle->SetCanvasPreferGL(kTRUE); c = new TCanvas(); if (!c->UseGL()) { throw std::runtime_error("OpenGL does not appear to be working"); }'
-        - root -b -l -q -x "${PREFIX}/tutorials/tree/run_h1analysis.C"
-    {% else %}
-    tests:
-      - python:
-          imports:
-            - ROOT
-            - JupyROOT
-          pip_check: false
-      - files:
-          recipe:
-            - test.cpp
-            - test_pyroot.py
-            - test_roofit_multiprocess.py
-        script:
-          - python test_pyroot.py
-          - python test_roofit_multiprocess.py
-          - python ${PREFIX}/tutorials/analysis/dataframe/df038_NumbaDeclare.py
-          - root -l -b -q -x test.cpp
-          - "root -b -l -q -x -e 'gSystem->LoadAllLibraries(); 0'"
-          - "root -b -l -q -x \"${PREFIX}/tutorials/analysis/tree/run_h1analysis.C\""
-          - root -l -b -q -x test.cpp++
-          - "jupyter-kernelspec list | grep ' root '"
-    {% endif %}
-
-  # =========================
-  # 2) PURE META GUARD (EMPTY)
-  # =========================
-  - name: root-guard
-    version: {{ major }}
-    noarch: generic
-    script: noop.sh
-    requirements:
-      run_constrained:
-        - root_base ==9999
-  # =========================
-  # 3) WRAPPER META
-  # =========================
-  - name: root-framework
-    version: {{ major }}.{{ minor }}
-    noarch: generic
-    script: noop.sh
-    requirements:
-      run:
-        - {{ pkg_name }} {{ major }}.{{ minor }}*
-        - root-guard {{ major }}
+        - test_pyroot.py
+        - test_roofit_multiprocess.py
+    script:
+      - python test_pyroot.py
+      - python test_roofit_multiprocess.py
+      - python ${PREFIX}/tutorials/analysis/dataframe/df038_NumbaDeclare.py
+      - root -l -b -q -x test.cpp
+      - "root -b -l -q -x -e 'gSystem->LoadAllLibraries(); 0'"
+      - "root -b -l -q -x \"${PREFIX}/tutorials/analysis/tree/run_h1analysis.C\""
+      - root -l -b -q -x test.cpp++
+      - "jupyter-kernelspec list | grep ' root '"
+{% endif %}
 
 about:
   home: https://root.cern/
   license: LGPL-2.1-only
   summary: "ROOT: analyzing petabytes of data, scientifically."
   description: |
-    ROOT is a modular scientific software toolkit. It provides all the functionalities needed to deal with big data
-    processing, statistical analysis, visualisation and storage. It is mainly written in C++ but integrated with other
-    languages such as Python and R.
+      ROOT is a modular scientific software toolkit. It provides all the functionalities needed to deal with big data
+      processing, statistical analysis, visualisation and storage. It is mainly written in C++ but integrated with other
+      languages such as Python and R.
 
 extra:
   recipe-maintainers:
