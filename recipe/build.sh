@@ -2,8 +2,6 @@
 set -x
 
 echo "Building ROOT version ${ROOT_VERSION} with C++${ROOT_CXX_STANDARD}"
-#!/bin/bash
-set -x
 
 # rebuild afterimage ./configure script after patch
 cp $BUILD_PREFIX/share/gnuconfig/config.* root-source/graf2d/asimage/src/libAfterImage
