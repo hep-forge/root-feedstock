@@ -10,8 +10,8 @@ else
     echo "Disabling sccache as it is not available"
 fi
 
-export GCC_AR="$BUILD_PREFIX/bin/ar"
-export GCC_RANLIB="$BUILD_PREFIX/bin/ranlib"
+export GCC_AR="$(which ar)"
+export GCC_RANLIB="$(which ranlib)"
 
 # rebuild afterimage ./configure script after patch
 cp $BUILD_PREFIX/share/gnuconfig/config.* graf2d/asimage/src/libAfterImage || true
