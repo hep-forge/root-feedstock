@@ -15,8 +15,8 @@ cp $BUILD_PREFIX/share/gnuconfig/config.* graf2d/asimage/src/libAfterImage || tr
 (cd graf2d/asimage/src/libAfterImage; autoconf)
 
 # symlink the correct ar for the build
-ln -s $BUILD_PREFIX/bin/ar $BUILD_PREFIX/bin/x86_64-conda-linux-gnu-gcc-ar
-ln -s $BUILD_PREFIX/bin/ranlib $BUILD_PREFIX/bin/x86_64-conda-linux-gnu-ranlib
+ln -sf $BUILD_PREFIX/bin/ar $BUILD_PREFIX/bin/x86_64-conda-linux-gnu-gcc-ar
+ln -sf $BUILD_PREFIX/bin/ranlib $BUILD_PREFIX/bin/x86_64-conda-linux-gnu-ranlib
 
 if [[ "${target_platform}" == "linux-"* ]]; then
   # Conda's binary relocation can result in string changing which can result in errors like
