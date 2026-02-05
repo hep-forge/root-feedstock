@@ -2,20 +2,12 @@
 set -x
 
 echo "Building ROOT version ${ROOT_VERSION} with C++${ROOT_CXX_STANDARD}"
-
-if command -v sccache &> /dev/null; then
-    export CMAKE_C_COMPILER_LAUNCHER=sccache
-    export CMAKE_CXX_COMPILER_LAUNCHER=sccache
-else
-    echo "Disabling sccache as it is not available"
-fi
-
-export GCC_AR="$(which ar)"
-export GCC_RANLIB="$(which ranlib)"
+#!/bin/bash
+set -x
 
 # rebuild afterimage ./configure script after patch
-cp $BUILD_PREFIX/share/gnuconfig/config.* graf2d/asimage/src/libAfterImage || true
-(cd graf2d/asimage/src/libAfterImage; autoconf)
+cp $BUILD_PREFIX/share/gnuconfig/config.* root-source/graf2d/asimage/src/libAfterImage
+(cd root-source/graf2d/asimage/src/libAfterImage; autoconf)
 
 if [[ "${target_platform}" == "linux-"* ]]; then
   # Conda's binary relocation can result in string changing which can result in errors like
@@ -26,9 +18,6 @@ if [[ "${target_platform}" == "linux-"* ]]; then
   export CFLAGS="${CFLAGS} -fno-merge-constants"
 fi
 
-# https://github.com/conda-forge/root-feedstock/issues/160
-export CXXFLAGS="${CXXFLAGS} -D__ROOFIT_NOBANNER"
-
 if [[ "${target_platform}" == "linux-ppc64le" ]]; then
   export CXXFLAGS="${CXXFLAGS} -fplt"
   export CFLAGS="${CFLAGS} -fplt"
@@ -38,30 +27,12 @@ fi
 # May not be very important but nice to do
 OLDVERSIONMACOS='${MACOSX_VERSION}'
 sed -i -e "s@${OLDVERSIONMACOS}@${MACOSX_DEPLOYMENT_TARGET}@g" \
-    cmake/modules/SetUpMacOS.cmake
+    root-source/cmake/modules/SetUpMacOS.cmake
 
 declare -a CMAKE_PLATFORM_FLAGS
 
-if [[ "${target_platform}" == osx-arm64 ]]; then
-    CONDA_SUBDIR=${target_platform} conda create --prefix "${SRC_DIR}/clang_env" --yes \
-        "llvm ${clang_version} ${clang_patches_version}*" \
-        "llvm-openmp ${clang_version}" \
-        "clangdev ${clang_version} ${clang_patches_version}*"
-    Clang_DIR=${SRC_DIR}/clang_env
-    CMAKE_PLATFORM_FLAGS+=("-DLLVM_CMAKE_PATH=${SRC_DIR}/clang_env/lib/cmake")
-else
-    Clang_DIR=${PREFIX}
-fi
-
-if [[ "${target_platform}" != "${build_platform}" && "${target_platform}" == osx* ]]; then
-    CONDA_SUBDIR=${build_platform} conda create --prefix "${SRC_DIR}/clang_env_build" --yes \
-        "llvm ${clang_version} ${clang_patches_version}*" \
-        "llvm-openmp ${clang_version}" \
-        "clangdev ${clang_version} ${clang_patches_version}*"
-    Clang_DIR_BUILD=${SRC_DIR}/clang_env_build
-else
-    Clang_DIR_BUILD=${BUILD_PREFIX}
-fi
+Clang_DIR=${PREFIX}
+Clang_DIR_BUILD=${BUILD_PREFIX}
 
 clang_version_split=(${clang_version//./ })
 CMAKE_PLATFORM_FLAGS+=("-DCLANG_RESOURCE_DIR_VERSION=${clang_version_split[0]}")
@@ -77,17 +48,6 @@ if [[ "${target_platform}" == linux* ]]; then
     CMAKE_PLATFORM_FLAGS+=("-DDEFAULT_SYSROOT=${INSTALL_SYSROOT}")
     CMAKE_PLATFORM_FLAGS+=("-DRT_LIBRARY=${INSTALL_SYSROOT}/usr/lib/librt.so")
 
-    # Fix finding X11 with CMake, copied from below with minor modifications
-    # https://github.com/Kitware/CMake/blob/e59e17c1c7059b7d0f02d6b12bc3094a2afee778/Modules/FindX11.cmake
-    cp "${RECIPE_DIR}/FindX11.cmake" "cmake/modules/"
-
-    # Hide symbols from LLVM/clang to avoid conflicts with other libraries
-    set +x
-    for lib_name in $(ls "${PREFIX}/lib" | grep -E 'lib(LLVM|clang).*\.a'); do
-        export CXXFLAGS="${CXXFLAGS} -Wl,--exclude-libs,${lib_name}"
-    done
-    set -x
-    echo "CXXFLAGS is now '${CXXFLAGS}'"
 else
     CMAKE_PLATFORM_FLAGS+=("-DBLA_PREFER_PKGCONFIG=ON")
 
@@ -124,7 +84,7 @@ export CXXFLAGS
 # The cross-linux toolchain breaks find_file relative to the current file
 # Patch up with sed
 sed -i -E 's#(ROOT_TEST_DRIVER RootTestDriver.cmake PATHS \$\{THISDIR\} \$\{CMAKE_MODULE_PATH\} NO_DEFAULT_PATH)#\1 CMAKE_FIND_ROOT_PATH_BOTH#g' \
-    ${SRC_DIR}/cmake/modules/RootNewMacros.cmake
+    ${SRC_DIR}/root-source/cmake/modules/RootNewMacros.cmake
 
 # The basics
 if [ "${ROOT_CONDA_BUILD_TYPE-}" == "" ]; then
@@ -132,6 +92,7 @@ if [ "${ROOT_CONDA_BUILD_TYPE-}" == "" ]; then
 else
     CMAKE_PLATFORM_FLAGS+=("-DCMAKE_BUILD_TYPE=${ROOT_CONDA_BUILD_TYPE}")
 fi
+CMAKE_PLATFORM_FLAGS+=("-GNinja")
 CMAKE_PLATFORM_FLAGS+=("-DCMAKE_INSTALL_PREFIX=${PREFIX}")
 CMAKE_PLATFORM_FLAGS+=("-DCMAKE_PREFIX_PATH=${PREFIX}")
 
@@ -170,27 +131,28 @@ CMAKE_PLATFORM_FLAGS+=("-Dbuiltin_zlib=OFF")
 CMAKE_PLATFORM_FLAGS+=("-Dbuiltin_zstd=OFF")
 
 # Configure LLVM/Clang/Cling
-if [ "${ROOT_CONDA_BUILTIN_CLANG-}" = "1" ]; then
-    CMAKE_PLATFORM_FLAGS+=("-Dbuiltin_llvm=ON")
-    CMAKE_PLATFORM_FLAGS+=("-Dbuiltin_clang=ON")
+CMAKE_PLATFORM_FLAGS+=("-Dbuiltin_llvm=OFF")
+CMAKE_PLATFORM_FLAGS+=("-Dbuiltin_clang=OFF")
+
+if [[ "${target_platform}" == "${build_platform}" ]]; then
+    CMAKE_PLATFORM_FLAGS+=("-DLLVM_CONFIG=${Clang_DIR}/bin/llvm-config")
+    CMAKE_PLATFORM_FLAGS+=("-DLLVM_TABLEGEN_EXE=${Clang_DIR}/bin/llvm-tblgen")
 else
-    CMAKE_PLATFORM_FLAGS+=("-Dbuiltin_llvm=OFF")
-    CMAKE_PLATFORM_FLAGS+=("-Dbuiltin_clang=OFF")
+    CMAKE_PLATFORM_FLAGS+=("-DLLVM_CONFIG=${Clang_DIR_BUILD}/bin/llvm-config")
+    CMAKE_PLATFORM_FLAGS+=("-DLLVM_TABLEGEN_EXE=${Clang_DIR_BUILD}/bin/llvm-tblgen")
+fi
 
-    if [[ "${target_platform}" == "${build_platform}" ]]; then
-        CMAKE_PLATFORM_FLAGS+=("-DLLVM_CONFIG=${Clang_DIR}/bin/llvm-config")
-        CMAKE_PLATFORM_FLAGS+=("-DLLVM_TABLEGEN_EXE=${Clang_DIR}/bin/llvm-tblgen")
-    else
-        CMAKE_PLATFORM_FLAGS+=("-DLLVM_CONFIG=${Clang_DIR_BUILD}/bin/llvm-config")
-        CMAKE_PLATFORM_FLAGS+=("-DLLVM_TABLEGEN_EXE=${Clang_DIR_BUILD}/bin/llvm-tblgen")
-    fi
+CMAKE_PLATFORM_FLAGS+=("-Dbuiltin_cling=ON")
+CMAKE_PLATFORM_FLAGS+=("-DCLING_BUILD_PLUGINS=ON")
+CMAKE_PLATFORM_FLAGS+=("-Dclad=ON")
 
-    CMAKE_PLATFORM_FLAGS+=("-Dbuiltin_cling=ON")
-    CMAKE_PLATFORM_FLAGS+=("-DCLING_BUILD_PLUGINS=ON")
-    CMAKE_PLATFORM_FLAGS+=("-Dclad=ON")
-
-    # Cling needs some minor patches to the LLVM sources, hackily apply them rather than rebuilding LLVM
-    sed -i "s@LLVM_LINK_LLVM_DYLIB yes@LLVM_LINK_LLVM_DYLIB no@g" "${Clang_DIR}/lib/cmake/llvm/LLVMConfig.cmake"
+# Cling needs some minor patches to the LLVM sources, hackily apply them rather than rebuilding LLVM
+# The following lines are used to avoid linking against LLVM during the build of ROOT, which is not supported.
+# The setting is done globally by the LLVM CMake configuration and it overrides any other setting in our build
+# For more details, see https://github.com/root-project/root/issues/18387 and https://github.com/llvm/llvm-project/pull/135570
+sed -i "s@LLVM_LINK_LLVM_DYLIB yes@LLVM_LINK_LLVM_DYLIB no@g" "${Clang_DIR}/lib/cmake/llvm/LLVMConfig.cmake"
+if [[ "${target_platform}" != "${build_platform}" ]]; then
+    sed -i "s@LLVM_LINK_LLVM_DYLIB yes@LLVM_LINK_LLVM_DYLIB no@g" "${Clang_DIR_BUILD}/lib/cmake/llvm/LLVMConfig.cmake"
 fi
 
 # Enable some vectorisation options
@@ -206,9 +168,9 @@ if [[ "${target_platform}" != "${build_platform}" ]]; then
     CMAKE_PLATFORM_FLAGS+=("-Druntime_cxxmodules=OFF")
 
     # Build rootcling_stage1 for the current platform
-    cp "${SRC_DIR}/interpreter/cling/lib/Interpreter/CIFactory.cpp"{,.orig}
-    sed -i "s@TODO_OVERRIDE_TARGET@\"--target=$(echo "${BUILD}" | sed 's@powerpc64le@ppc64le@g')\"@g" "${SRC_DIR}/interpreter/cling/lib/Interpreter/CIFactory.cpp"
-    diff "${SRC_DIR}/interpreter/cling/lib/Interpreter/CIFactory.cpp"{.orig,} || true
+    cp "${SRC_DIR}/root-source/interpreter/cling/lib/Interpreter/CIFactory.cpp"{,.orig}
+    sed -i "s@TODO_OVERRIDE_TARGET@\"--target=$(echo "${BUILD}" | sed 's@powerpc64le@ppc64le@g')\"@g" "${SRC_DIR}/root-source/interpreter/cling/lib/Interpreter/CIFactory.cpp"
+    diff "${SRC_DIR}/root-source/interpreter/cling/lib/Interpreter/CIFactory.cpp"{.orig,} || true
 
     declare -a CMAKE_PLATFORM_FLAGS_BUILD
     CMAKE_PLATFORM_FLAGS_BUILD+=("-Dminimal=ON")
@@ -234,11 +196,10 @@ if [[ "${target_platform}" != "${build_platform}" ]]; then
     CONDA_BUILD_SYSROOT_BUILD=$CONDA_BUILD_SYSROOT
 
     if [[ "${target_platform}" == osx* ]]; then
-        CMAKE_PLATFORM_FLAGS_BUILD+=("-DLLVM_CMAKE_PATH=${SRC_DIR}/clang_env_build/lib/cmake")
+        CMAKE_PLATFORM_FLAGS_BUILD+=("-DLLVM_CMAKE_PATH=${Clang_DIR_BUILD}/lib/cmake")
         clang_version_split=(${clang_version//./ })
         CMAKE_PLATFORM_FLAGS_BUILD+=("-DCLANG_RESOURCE_DIR_VERSION=${clang_version_split[0]}")
     elif [[ "${target_platform}" == linux* ]]; then
-        CMAKE_PLATFORM_FLAGS_BUILD+=("-GNinja")
         CONDA_BUILD_SYSROOT_BUILD="${BUILD_PREFIX}/${BUILD}/sysroot"
     else
         echo "Unsupported cross-compilation target"
@@ -256,7 +217,7 @@ if [[ "${target_platform}" != "${build_platform}" ]]; then
     CMAKE_ARGS_BUILD=$(echo $CMAKE_ARGS | sed s@$PREFIX@$BUILD_PREFIX@g | sed s@${host_alias}@${build_alias}@g)
 
     CONDA_BUILD_SYSROOT="${CONDA_BUILD_SYSROOT_BUILD}" CMAKE_PREFIX_PATH="${BUILD_PREFIX}" \
-        cmake "${SRC_DIR}" \
+        cmake "${SRC_DIR}/root-source" \
                 -B "${SRC_DIR}/build-rootcling_stage1-xp" \
                 -DCLING_CXX_PATH="$CXX_FOR_BUILD" \
                 "${CMAKE_PLATFORM_FLAGS_BUILD[@]}" \
@@ -266,12 +227,12 @@ if [[ "${target_platform}" != "${build_platform}" ]]; then
         cmake --build "${SRC_DIR}/build-rootcling_stage1-xp" --target rootcling_stage1 -- "-j${CPU_COUNT}"
 
     # Build rootcling for the current platform but that will target the host platform
-    cp ${SRC_DIR}/interpreter/cling/lib/Interpreter/CIFactory.cpp{.orig,}
-    sed -i "s@TODO_OVERRIDE_TARGET@\"--target=$(echo "${HOST}" | sed 's@powerpc64le@ppc64le@g')\"@g" ${SRC_DIR}/interpreter/cling/lib/Interpreter/CIFactory.cpp
-    diff ${SRC_DIR}/interpreter/cling/lib/Interpreter/CIFactory.cpp{.orig,} || true
+    cp ${SRC_DIR}/root-source/interpreter/cling/lib/Interpreter/CIFactory.cpp{.orig,}
+    sed -i "s@TODO_OVERRIDE_TARGET@\"--target=$(echo "${HOST}" | sed 's@powerpc64le@ppc64le@g')\"@g" ${SRC_DIR}/root-source/interpreter/cling/lib/Interpreter/CIFactory.cpp
+    diff ${SRC_DIR}/root-source/interpreter/cling/lib/Interpreter/CIFactory.cpp{.orig,} || true
 
     CONDA_BUILD_SYSROOT="${CONDA_BUILD_SYSROOT_BUILD}" CMAKE_PREFIX_PATH="${BUILD_PREFIX}" \
-        cmake "${SRC_DIR}" \
+        cmake "${SRC_DIR}/root-source" \
                 -B "${SRC_DIR}/build-rootcling-xp" \
                 -DCLING_CXX_PATH="$CXX" \
                 "${CMAKE_PLATFORM_FLAGS_BUILD[@]}" \
@@ -282,51 +243,21 @@ if [[ "${target_platform}" != "${build_platform}" ]]; then
     mv "${SRC_DIR}/build-rootcling-xp/core/rootcling_stage1/src/rootcling_stage1"{,.orig}
     cp "${SRC_DIR}"/build-{rootcling_stage1,rootcling}-xp/"core/rootcling_stage1/src/rootcling_stage1"
     touch -r "${SRC_DIR}/build-rootcling-xp/core/rootcling_stage1/src/rootcling_stage1"{.orig,}
-    if [[ "${target_platform}" == osx* ]]; then
-        # This is a horrible hack to hide the LLVM/Clang symbols in libCling.so on macOS
-        cd ${SRC_DIR}/build-rootcling-xp/core/metacling/src
-        # First build libCling.so
-        cmake --build . -- "-j${CPU_COUNT}"
-        # Find the symbols in libCling.so
-        "${NM}" -g ../../../lib/libCling.so | ruby -ne 'if /^[0-9a-f]+.*\s(\S+)$/.match($_) then print $1,"\n" end' | sort -u > original.exp
-        # Find the symbols in the LLVM and Clang static libraries
-        "${NM}" -g ${Clang_DIR_BUILD}/lib/lib{LLVM,clang}*.a | ruby -ne 'if /^[0-9a-f]+.*\s(\S+)$/.match($_) then print $1,"\n" end' | sort -u > clang_and_llvm.exp
-        # Find the difference, i.e. symbols that are in libCling.so but aren't defined in LLVM/Clang
-        comm -23 original.exp clang_and_llvm.exp > allowed_symbols.exp
-        # Add "-exported_symbols_list" to the link command
-        sed -i "s@$CXX_FOR_BUILD @$CXX_FOR_BUILD -exported_symbols_list $PWD/allowed_symbols.exp @g" CMakeFiles/Cling.dir/link.txt
-        # Build libCling.so again now the link command has been updated
-        cmake --build . -- "-j${CPU_COUNT}"
-        # Show some details about the number of symbols before and after in case further debugging is required
-        "${NM}" -g ../../../lib/libCling.so | ruby -ne 'if /^[0-9a-f]+.*\s(\S+)$/.match($_) then print $1,"\n" end' | sort -u > new.exp
-        wc -l *.exp
-        cd -
-    fi
     CONDA_BUILD_SYSROOT="${CONDA_BUILD_SYSROOT_BUILD}" \
         cmake --build "${SRC_DIR}/build-rootcling-xp" --target rootcling -- "-j${CPU_COUNT}"
 fi
 
-# Disable the Python bindings if we're building them in standalone mode
-CMAKE_PLATFORM_FLAGS+=("-Dpyroot_legacy=OFF")
-if [ "${ROOT_CONDA_BUILTIN_PYROOT-}" = "true" ]; then
-    Python_INCLUDE_DIR="$(python -c 'import sysconfig; print(sysconfig.get_path("include"))')"
-    Python_NumPy_INCLUDE_DIR="$(python -c 'import numpy;print(numpy.get_include())')"
-    CMAKE_PLATFORM_FLAGS+=("-DPython_EXECUTABLE:PATH=${PYTHON}")
-    CMAKE_PLATFORM_FLAGS+=("-DPython_INCLUDE_DIR:PATH=${Python_INCLUDE_DIR}")
-    CMAKE_PLATFORM_FLAGS+=("-DPython_NumPy_INCLUDE_DIR=${Python_NumPy_INCLUDE_DIR}")
-    CMAKE_PLATFORM_FLAGS+=("-DPython3_EXECUTABLE:PATH=${PYTHON}")
-    CMAKE_PLATFORM_FLAGS+=("-DPython3_INCLUDE_DIR:PATH=${Python_INCLUDE_DIR}")
-    CMAKE_PLATFORM_FLAGS+=("-DPython3_NumPy_INCLUDE_DIR=${Python_NumPy_INCLUDE_DIR}")
-    CMAKE_PLATFORM_FLAGS+=("-DCMAKE_INSTALL_PYTHONDIR=${SP_DIR}")
-    CMAKE_PLATFORM_FLAGS+=("-Dpyroot=ON")
-    CMAKE_PLATFORM_FLAGS+=("-Dtpython=ON")
-    CMAKE_PLATFORM_FLAGS+=("-Dtmva-pymva=ON")
-else
-    CMAKE_PLATFORM_FLAGS+=("-DPython3_EXECUTABLE=${PYTHON}")
-    CMAKE_PLATFORM_FLAGS+=("-Dpyroot=OFF")
-    CMAKE_PLATFORM_FLAGS+=("-Dtpython=OFF")
-    CMAKE_PLATFORM_FLAGS+=("-Dtmva-pymva=OFF")
-fi
+Python_INCLUDE_DIR="$(python -c 'import sysconfig; print(sysconfig.get_path("include"))')"
+Python_NumPy_INCLUDE_DIR="$(python -c 'import numpy;print(numpy.get_include())')"
+CMAKE_PLATFORM_FLAGS+=("-DPython_EXECUTABLE:PATH=${PYTHON}")
+CMAKE_PLATFORM_FLAGS+=("-DPython_INCLUDE_DIR:PATH=${Python_INCLUDE_DIR}")
+CMAKE_PLATFORM_FLAGS+=("-DPython_NumPy_INCLUDE_DIR=${Python_NumPy_INCLUDE_DIR}")
+CMAKE_PLATFORM_FLAGS+=("-DPython3_EXECUTABLE:PATH=${PYTHON}")
+CMAKE_PLATFORM_FLAGS+=("-DPython3_INCLUDE_DIR:PATH=${Python_INCLUDE_DIR}")
+CMAKE_PLATFORM_FLAGS+=("-DPython3_NumPy_INCLUDE_DIR=${Python_NumPy_INCLUDE_DIR}")
+CMAKE_PLATFORM_FLAGS+=("-DCMAKE_INSTALL_PYTHONDIR=${SP_DIR}")
+CMAKE_PLATFORM_FLAGS+=("-Dpyroot=ON")
+CMAKE_PLATFORM_FLAGS+=("-Dtmva-pymva=ON")
 
 # Disable the R bindings, should be made standalong like PyROOT
 CMAKE_PLATFORM_FLAGS+=("-Dr=OFF")
@@ -354,6 +285,7 @@ CMAKE_PLATFORM_FLAGS+=("-Dmlp=ON")
 CMAKE_PLATFORM_FLAGS+=("-Dopengl=ON")
 CMAKE_PLATFORM_FLAGS+=("-Dpythia8=ON")
 CMAKE_PLATFORM_FLAGS+=("-Droofit=ON")
+CMAKE_PLATFORM_FLAGS+=("-Droofit_multiprocess=ON")
 CMAKE_PLATFORM_FLAGS+=("-Droot7=ON")
 CMAKE_PLATFORM_FLAGS+=("-Dspectrum=ON")
 CMAKE_PLATFORM_FLAGS+=("-Dsqlite=ON")
@@ -363,10 +295,6 @@ CMAKE_PLATFORM_FLAGS+=("-Dvdt=ON")
 CMAKE_PLATFORM_FLAGS+=("-Dwebgui=ON")
 CMAKE_PLATFORM_FLAGS+=("-Dxml=ON")
 CMAKE_PLATFORM_FLAGS+=("-Dxrootd=ON")
-
-if [[ $ROOT_VERSION_MAJOR -le 6 && $ROOT_VERSION_MINOR -le 34 ]]; then
-    CMAKE_PLATFORM_FLAGS+=("-Dhtml=ON")
-fi
 
 # On by default but disabled
 CMAKE_PLATFORM_FLAGS+=("-Dgfal=OFF")
@@ -417,8 +345,6 @@ if [[ "${target_platform}" == linux* ]]; then
 else
     CMAKE_PLATFORM_FLAGS+=("-Dcocoa=ON")
 fi
-# Should be disabled for ARM?
-# runtime_cxxmodules 	Enable runtime support for C++ modules 	ON
 
 # Configure the tests
 if [ "${ROOT_CONDA_RUN_GTESTS-}" = "1" ]; then
@@ -430,15 +356,8 @@ else
 fi
 CMAKE_PLATFORM_FLAGS+=("-Droottest=OFF")
 
-if [[ "${target_platform}" != osx* ]]; then
-    # Can't use ninja on macOS due to "horrible hack to hide the LLVM/Clang symbols" (see below)
-    CMAKE_PLATFORM_FLAGS+=("-GNinja")
-fi
-
 # Now we can actually run CMake
-echo cmake $CMAKE_ARGS "${CMAKE_PLATFORM_FLAGS[@]}" ${SRC_DIR}
-cmake $CMAKE_ARGS "${CMAKE_PLATFORM_FLAGS[@]}" ${SRC_DIR}
-set +e
+cmake $CMAKE_ARGS "${CMAKE_PLATFORM_FLAGS[@]}" ${SRC_DIR}/root-source
 
 if [[ "${target_platform}" != "${build_platform}" ]]; then
     # Build rootcling_stage1 then substitute the binary with the host version
@@ -446,28 +365,6 @@ if [[ "${target_platform}" != "${build_platform}" ]]; then
     mv core/rootcling_stage1/src/rootcling_stage1{,.orig}
     cp "${SRC_DIR}/build-rootcling_stage1-xp/core/rootcling_stage1/src/rootcling_stage1" core/rootcling_stage1/src/rootcling_stage1
     touch -r core/rootcling_stage1/src/rootcling_stage1{.orig,}
-fi
-
-if [[ "${target_platform}" == osx* ]]; then
-    # This is a horrible hack to hide the LLVM/Clang symbols in libCling.so on macOS
-    cd core/metacling/src
-    # First build libCling.so
-    cmake --build . -- "-j${CPU_COUNT}"
-
-    # Find the symbols in libCling.so
-    "${NM}" -g ../../../lib/libCling.so | ruby -ne 'if /^[0-9a-f]+.*\s(\S+)$/.match($_) then print $1,"\n" end' | sort -u > original.exp
-    # Find the symbols in the LLVM and Clang static libraries
-    "${NM}" -g ${Clang_DIR}/lib/lib{LLVM,clang}*.a | ruby -ne 'if /^[0-9a-f]+.*\s(\S+)$/.match($_) then print $1,"\n" end' | sort -u > clang_and_llvm.exp
-    # Find the difference, i.e. symbols that are in libCling.so but aren't defined in LLVM/Clang
-    comm -23 original.exp clang_and_llvm.exp > allowed_symbols.exp
-    # Add "-exported_symbols_list" to the link command
-    sed -i "s@$CXX @$CXX -exported_symbols_list $PWD/allowed_symbols.exp @g" CMakeFiles/Cling.dir/link.txt
-    # Build libCling.so again now the link command has been updated
-    cmake --build . -- "-j${CPU_COUNT}"
-    # Show some details about the number of symbols before and after in case further debugging is required
-    "${NM}" -g ../../../lib/libCling.so | ruby -ne 'if /^[0-9a-f]+.*\s(\S+)$/.match($_) then print $1,"\n" end' | sort -u > new.exp
-    wc -l *.exp
-    cd -
 fi
 
 if [[ "${target_platform}" != "${build_platform}" ]]; then
@@ -479,24 +376,12 @@ if [[ "${target_platform}" != "${build_platform}" ]]; then
 fi
 
 cmake --build . -- "-j${CPU_COUNT}"
-ret=$?
-if [ ! $ret -eq 0 ]; then
-   for log_file in $(find . \( -name '*-configure-*.log' -o -name '*-build-*.log' -o -name '*-install-*.log' \)); do
-     cat "$log_file"
-   done
-   exit $ret
-fi
-
 
 if [[ "${target_platform}" != "${build_platform}" ]]; then
     # Restore the original rootcling_stage1/rootcling binaries
     mv core/rootcling_stage1/src/rootcling_stage1{.orig,}
     mv bin/rootcling{.orig,}
 fi
-
-# cd tutorials
-# EXTRA_CLING_ARGS='-O1' LD_LIBRARY_PATH=$SRC_DIR/build-dir/lib: ROOTIGNOREPREFIX=1 ROOT_HIST=0 $SRC_DIR/build-dir/bin/root.exe -l -q -b -n -x hsimple.C -e return
-# cd ..
 
 if [ "${ROOT_CONDA_RUN_GTESTS-}" = "1" ]; then
     # Run gtests, never fail as Jenkins will check the test results instead
@@ -522,10 +407,52 @@ cp -r "$PREFIX/etc/notebook/kernels/root" "$PREFIX/share/jupyter/kernels"
 
 # Add the post activate/deactivate scripts
 mkdir -p "${PREFIX}/etc/conda/activate.d"
-cp "${RECIPE_DIR}/scripts/activate.sh" "${PREFIX}/etc/conda/activate.d/activate-root.sh"
-cp "${RECIPE_DIR}/scripts/activate.csh" "${PREFIX}/etc/conda/activate.d/activate-root.csh"
-cp "${RECIPE_DIR}/scripts/activate.fish" "${PREFIX}/etc/conda/activate.d/activate-root.fish"
+cp "${RECIPE_DIR}/activate.sh" "${PREFIX}/etc/conda/activate.d/activate-root.sh"
+cp "${RECIPE_DIR}/activate.csh" "${PREFIX}/etc/conda/activate.d/activate-root.csh"
+cp "${RECIPE_DIR}/activate.fish" "${PREFIX}/etc/conda/activate.d/activate-root.fish"
 mkdir -p "${PREFIX}/etc/conda/deactivate.d"
-cp "${RECIPE_DIR}/scripts/deactivate.sh" "${PREFIX}/etc/conda/deactivate.d/deactivate-root.sh"
-cp "${RECIPE_DIR}/scripts/deactivate.csh" "${PREFIX}/etc/conda/deactivate.d/deactivate-root.csh"
-cp "${RECIPE_DIR}/scripts/deactivate.fish" "${PREFIX}/etc/conda/deactivate.d/deactivate-root.fish"
+cp "${RECIPE_DIR}/deactivate.sh" "${PREFIX}/etc/conda/deactivate.d/deactivate-root.sh"
+cp "${RECIPE_DIR}/deactivate.csh" "${PREFIX}/etc/conda/deactivate.d/deactivate-root.csh"
+cp "${RECIPE_DIR}/deactivate.fish" "${PREFIX}/etc/conda/deactivate.d/deactivate-root.fish"
+
+# Non-bourne-like shells do not get the same level of support as bourne-like shells on conda.
+# Patch the activation scripts to set the required environment variable on Linux. MacOS seems
+# to not be affected by the same issue.
+# See https://github.com/conda/conda/issues/7993 and https://github.com/ContinuumIO/anaconda-issues/issues/11624
+if [[ "${target_platform}" == "linux-"* ]]; then
+  source $RECIPE_DIR/get_cpu_arch.sh # populates CHOST variable
+  # fish
+  cat >> "${PREFIX}/etc/conda/activate.d/activate-root.fish" << EOF
+
+if set -q CONDA_BUILD_SYSROOT
+    set -gx BACKUP_CONDA_BUILD_SYSROOT "\$CONDA_BUILD_SYSROOT"
+end
+set -gx CONDA_BUILD_SYSROOT "\$CONDA_PREFIX/${CHOST}/sysroot"
+EOF
+  cat >> "${PREFIX}/etc/conda/deactivate.d/deactivate-root.fish" << EOF
+
+if set -q BACKUP_CONDA_BUILD_SYSROOT
+    set -gx CONDA_BUILD_SYSROOT "\$BACKUP_CONDA_BUILD_SYSROOT"
+    set -e BACKUP_CONDA_BUILD_SYSROOT
+else
+    set -e CONDA_BUILD_SYSROOT
+end
+EOF
+  # tcsh
+  cat >> "${PREFIX}/etc/conda/activate.d/activate-root.csh" << EOF
+
+if (\$?CONDA_BUILD_SYSROOT) then
+  setenv BACKUP_CONDA_BUILD_SYSROOT "\${CONDA_BUILD_SYSROOT}"
+endif
+setenv CONDA_BUILD_SYSROOT "\${CONDA_PREFIX}/${CHOST}/sysroot"
+EOF
+  cat >> "${PREFIX}/etc/conda/deactivate.d/deactivate-root.csh" << EOF
+
+if (\$?BACKUP_CONDA_BUILD_SYSROOT) then
+  setenv CONDA_BUILD_SYSROOT "\${BACKUP_CONDA_BUILD_SYSROOT}"
+  unsetenv BACKUP_CONDA_BUILD_SYSROOT
+else
+  unsetenv CONDA_BUILD_SYSROOT
+endif
+EOF
+fi
