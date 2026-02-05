@@ -7,6 +7,16 @@ echo "Building ROOT version ${ROOT_VERSION} with C++${ROOT_CXX_STANDARD}"
 cp $BUILD_PREFIX/share/gnuconfig/config.* graf2d/asimage/src/libAfterImage || true
 (cd graf2d/asimage/src/libAfterImage; autoconf)
 
+# if command -v sccache &> /dev/null; then
+#     export CMAKE_C_COMPILER_LAUNCHER=sccache
+#     export CMAKE_CXX_COMPILER_LAUNCHER=sccache
+# else
+#     echo "Disabling sccache as it is not available"
+# fi
+
+export GCC_AR="$(which ar)"
+export GCC_RANLIB="$(which ranlib)"
+
 if [[ "${target_platform}" == "linux-"* ]]; then
   # Conda's binary relocation can result in string changing which can result in errors like
   #   > $ root.exe -l -b -q -x root-feedstock/recipe/test.cpp++
