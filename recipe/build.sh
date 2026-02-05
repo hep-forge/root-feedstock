@@ -25,7 +25,7 @@ fi
 # May not be very important but nice to do
 OLDVERSIONMACOS='${MACOSX_VERSION}'
 sed -i -e "s@${OLDVERSIONMACOS}@${MACOSX_DEPLOYMENT_TARGET}@g" \
-    root-source/cmake/modules/SetUpMacOS.cmake
+    cmake/modules/SetUpMacOS.cmake
 
 declare -a CMAKE_PLATFORM_FLAGS
 
@@ -82,7 +82,7 @@ export CXXFLAGS
 # The cross-linux toolchain breaks find_file relative to the current file
 # Patch up with sed
 sed -i -E 's#(ROOT_TEST_DRIVER RootTestDriver.cmake PATHS \$\{THISDIR\} \$\{CMAKE_MODULE_PATH\} NO_DEFAULT_PATH)#\1 CMAKE_FIND_ROOT_PATH_BOTH#g' \
-    ${SRC_DIR}/root-source/cmake/modules/RootNewMacros.cmake
+    ${SRC_DIR}/cmake/modules/RootNewMacros.cmake
 
 # The basics
 if [ "${ROOT_CONDA_BUILD_TYPE-}" == "" ]; then
@@ -166,9 +166,9 @@ if [[ "${target_platform}" != "${build_platform}" ]]; then
     CMAKE_PLATFORM_FLAGS+=("-Druntime_cxxmodules=OFF")
 
     # Build rootcling_stage1 for the current platform
-    cp "${SRC_DIR}/root-source/interpreter/cling/lib/Interpreter/CIFactory.cpp"{,.orig}
-    sed -i "s@TODO_OVERRIDE_TARGET@\"--target=$(echo "${BUILD}" | sed 's@powerpc64le@ppc64le@g')\"@g" "${SRC_DIR}/root-source/interpreter/cling/lib/Interpreter/CIFactory.cpp"
-    diff "${SRC_DIR}/root-source/interpreter/cling/lib/Interpreter/CIFactory.cpp"{.orig,} || true
+    cp "${SRC_DIR}/interpreter/cling/lib/Interpreter/CIFactory.cpp"{,.orig}
+    sed -i "s@TODO_OVERRIDE_TARGET@\"--target=$(echo "${BUILD}" | sed 's@powerpc64le@ppc64le@g')\"@g" "${SRC_DIR}/interpreter/cling/lib/Interpreter/CIFactory.cpp"
+    diff "${SRC_DIR}/interpreter/cling/lib/Interpreter/CIFactory.cpp"{.orig,} || true
 
     declare -a CMAKE_PLATFORM_FLAGS_BUILD
     CMAKE_PLATFORM_FLAGS_BUILD+=("-Dminimal=ON")
@@ -215,7 +215,7 @@ if [[ "${target_platform}" != "${build_platform}" ]]; then
     CMAKE_ARGS_BUILD=$(echo $CMAKE_ARGS | sed s@$PREFIX@$BUILD_PREFIX@g | sed s@${host_alias}@${build_alias}@g)
 
     CONDA_BUILD_SYSROOT="${CONDA_BUILD_SYSROOT_BUILD}" CMAKE_PREFIX_PATH="${BUILD_PREFIX}" \
-        cmake "${SRC_DIR}/root-source" \
+        cmake "${SRC_DIR}" \
                 -B "${SRC_DIR}/build-rootcling_stage1-xp" \
                 -DCLING_CXX_PATH="$CXX_FOR_BUILD" \
                 "${CMAKE_PLATFORM_FLAGS_BUILD[@]}" \
@@ -225,12 +225,12 @@ if [[ "${target_platform}" != "${build_platform}" ]]; then
         cmake --build "${SRC_DIR}/build-rootcling_stage1-xp" --target rootcling_stage1 -- "-j${CPU_COUNT}"
 
     # Build rootcling for the current platform but that will target the host platform
-    cp ${SRC_DIR}/root-source/interpreter/cling/lib/Interpreter/CIFactory.cpp{.orig,}
-    sed -i "s@TODO_OVERRIDE_TARGET@\"--target=$(echo "${HOST}" | sed 's@powerpc64le@ppc64le@g')\"@g" ${SRC_DIR}/root-source/interpreter/cling/lib/Interpreter/CIFactory.cpp
-    diff ${SRC_DIR}/root-source/interpreter/cling/lib/Interpreter/CIFactory.cpp{.orig,} || true
+    cp ${SRC_DIR}/interpreter/cling/lib/Interpreter/CIFactory.cpp{.orig,}
+    sed -i "s@TODO_OVERRIDE_TARGET@\"--target=$(echo "${HOST}" | sed 's@powerpc64le@ppc64le@g')\"@g" ${SRC_DIR}/interpreter/cling/lib/Interpreter/CIFactory.cpp
+    diff ${SRC_DIR}/interpreter/cling/lib/Interpreter/CIFactory.cpp{.orig,} || true
 
     CONDA_BUILD_SYSROOT="${CONDA_BUILD_SYSROOT_BUILD}" CMAKE_PREFIX_PATH="${BUILD_PREFIX}" \
-        cmake "${SRC_DIR}/root-source" \
+        cmake "${SRC_DIR}" \
                 -B "${SRC_DIR}/build-rootcling-xp" \
                 -DCLING_CXX_PATH="$CXX" \
                 "${CMAKE_PLATFORM_FLAGS_BUILD[@]}" \
@@ -355,7 +355,7 @@ fi
 CMAKE_PLATFORM_FLAGS+=("-Droottest=OFF")
 
 # Now we can actually run CMake
-cmake $CMAKE_ARGS "${CMAKE_PLATFORM_FLAGS[@]}" ${SRC_DIR}/root-source
+cmake $CMAKE_ARGS "${CMAKE_PLATFORM_FLAGS[@]}" ${SRC_DIR}
 
 if [[ "${target_platform}" != "${build_platform}" ]]; then
     # Build rootcling_stage1 then substitute the binary with the host version
