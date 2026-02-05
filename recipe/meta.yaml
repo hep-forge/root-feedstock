@@ -231,7 +231,6 @@ requirements:
     - xxhash
     - zlib
     - zstd
-{% if version < "6.34" %}
     # Required for roofit_multiprocess
     - cppzmq
     # Required zmq_ppoll API added in v4.3.5
@@ -240,7 +239,6 @@ requirements:
     # Note that zeromq and zeromq * drafts_* are both required
     # c.f. https://github.com/conda-forge/root-feedstock/pull/292#discussion_r2334082389
     - zeromq * drafts_*
-{% endif %}
     - libgcc={{ gnu_pin }}
     - libgcc-ng={{ gnu_pin }}
     - libstdcxx={{ gnu_pin }}
