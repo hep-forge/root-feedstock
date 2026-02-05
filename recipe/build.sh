@@ -10,19 +10,12 @@ else
     echo "Disabling sccache as it is not available"
 fi
 
+export GCC_AR="$BUILD_PREFIX/bin/ar"
+export GCC_RANLIB="$BUILD_PREFIX/bin/ranlib"
+
 # rebuild afterimage ./configure script after patch
 cp $BUILD_PREFIX/share/gnuconfig/config.* graf2d/asimage/src/libAfterImage || true
 (cd graf2d/asimage/src/libAfterImage; autoconf)
-
-# symlink correct ar/ranlib
-mkdir -p $BUILD_PREFIX/bin
-ln -sf $BUILD_PREFIX/bin/ar $BUILD_PREFIX/bin/x86_64-conda-linux-gnu-gcc-ar
-ln -sf $BUILD_PREFIX/bin/ranlib $BUILD_PREFIX/bin/x86_64-conda-linux-gnu-ranlib
-
-# symlink the correct ar for the build
-# export AR="$BUILD_PREFIX/bin/ar"
-# export RANLIB="$BUILD_PREFIX/bin/ranlib"
-# export PATH="$BUILD_PREFIX/bin:$PATH"
 
 if [[ "${target_platform}" == "linux-"* ]]; then
   # Conda's binary relocation can result in string changing which can result in errors like
