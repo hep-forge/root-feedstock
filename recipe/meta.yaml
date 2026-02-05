@@ -273,6 +273,7 @@ requirements:
     - graphviz
     - tbb
     - tbb-devel
+    - gsl
 {% if linux %}
     - xorg-xorgproto
     - xorg-libx11
