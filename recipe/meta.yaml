@@ -115,8 +115,9 @@ build:
     # C stdlib macro (cross-platform)
     - {{ stdlib("c") }}
       
+  # Note: PCM files contain paths that conda will try to relocate
+  # This works because conda uses placeholder paths of matching length during build
   ignore_prefix_files:
-    - lib/*.pcm
     - etc/allDict.cxx.pch
   ignore_run_exports_from:
     - clangdev

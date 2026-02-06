@@ -104,6 +104,11 @@ CMAKE_PLATFORM_FLAGS+=("-GNinja")
 CMAKE_PLATFORM_FLAGS+=("-DCMAKE_INSTALL_PREFIX=${PREFIX}")
 CMAKE_PLATFORM_FLAGS+=("-DCMAKE_PREFIX_PATH=${PREFIX}")
 
+# Set output directories to install prefix so PCM paths are correct at runtime
+# This ensures .pcm files embed install-time paths, not build-time paths
+CMAKE_PLATFORM_FLAGS+=("-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=${PREFIX}/lib")
+CMAKE_PLATFORM_FLAGS+=("-DCMAKE_RUNTIME_OUTPUT_DIRECTORY=${PREFIX}/bin")
+
 CMAKE_PLATFORM_FLAGS+=("-Dfail-on-missing=ON")
 # TODO: Switch this on?
 CMAKE_PLATFORM_FLAGS+=("-Dgnuinstall=OFF")
@@ -335,7 +340,8 @@ CMAKE_PLATFORM_FLAGS+=("-Dxproofd=OFF")
 # Developer only options
 CMAKE_PLATFORM_FLAGS+=("-Dccache=OFF")
 CMAKE_PLATFORM_FLAGS+=("-Dcoverage=OFF")
-CMAKE_PLATFORM_FLAGS+=("-Dcxxmodules=OFF")
+CMAKE_PLATFORM_FLAGS+=("-Dcxxmodules=ON")
+CMAKE_PLATFORM_FLAGS+=("-Druntime_cxxmodules=ON")
 CMAKE_PLATFORM_FLAGS+=("-Ddev=OFF")
 CMAKE_PLATFORM_FLAGS+=("-Ddistcc=OFF")
 CMAKE_PLATFORM_FLAGS+=("-Djemalloc=OFF")
