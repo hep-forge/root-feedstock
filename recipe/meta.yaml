@@ -124,6 +124,7 @@ build:
     - zlib
     - davix
     - cfitsio
+    - gdk-pixbuf
 
 requirements:
   build:
