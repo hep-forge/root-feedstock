@@ -196,7 +196,7 @@ requirements:
     - fftw
     - freetype
     - ftgl
-    - gdk-pixbuf
+    - gdk-pixbuf 2.44.*
     - giflib
     - glew
     - glib
