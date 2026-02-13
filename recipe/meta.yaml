@@ -283,6 +283,7 @@ requirements:
     - libgcc-devel_linux-64={{ gnu_pin }}
     - libstdcxx-devel_linux-64={{ gnu_pin }}
     - libgomp={{ gnu_pin }}
+    - gsl
 
   run_constraints:
     - numba >=0.52
