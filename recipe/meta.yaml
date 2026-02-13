@@ -147,7 +147,7 @@ requirements:
 {% endif %}
 {% if build_platform != target_platform %}
     - cross-python_{{ target_platform }}
-    - python {{ python_version.get(version) }}.* *_cpython
+    - python {{ python_version.get(version) }}.* #*_cpython
     - numpy
     - xxhash
     - zlib
