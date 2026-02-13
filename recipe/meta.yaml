@@ -219,7 +219,7 @@ requirements:
     - tbb-devel
     - vector-classes
     - vdt
-    - python {{ python_version.get(version) }}.* *_cpython
+    - python {{ python_version.get(version) }}.* #*_cpython
     - numpy
     - xrootd
     - liblzma-devel
@@ -257,7 +257,7 @@ requirements:
 {% endif %}
 
   run:
-    - python {{ python_version.get(version) }}.* *_cpython
+    - python {{ python_version.get(version) }}.* #*_cpython
     - numpy
     - {{ compiler('c') }}{{ gnu_pin }}
     - {{ compiler('cxx') }}{{ gnu_pin }}
