@@ -6,5 +6,11 @@ c_stdlib_version:
   - 2.17  # [linux]
   - 11.0  # [osx]
 
+c_compiler:
+  - gcc
+cxx_compiler:
+  - gxx
+fortran_compiler:
+  - gfortran
 packages:
   - numpy
