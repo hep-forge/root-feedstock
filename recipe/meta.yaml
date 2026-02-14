@@ -15,29 +15,29 @@ package:
   version: {{ environ.get('ANACONDA_VERSION', version)|replace("-", ".") }}
 
 {% set root_cxx_standard = {
-    "6.32.16": "17",
-    "6.34.10": "20",
     "6.36.04": "23",
+    "6.34.10": "20",
+    "6.32.16": "17"
 } %}
 
 {% set python_version = {
-    "6.32.16": "3.10",
+    "6.36.04": "3.12",
     "6.34.10": "3.12",
-    "6.36.04": "3.12"
+    "6.32.16": "3.10"
 } %}
 
 {% set gnu_versions = {
-    "6.32.16": "14",
+    "6.36.04": "15",
     "6.34.10": "15",
-    "6.36.04": "15"
+    "6.32.16": "14"
 } %}
 {% set _gnu_major = gnu_versions.get(version, "") %}
 {% set gnu_pin = (" " + _gnu_major + ".*") if _gnu_major else "" %}
 
 {% set clang_versions = {
-    "6.32.16": "16.0.6",
+    "6.36.04": "18.1.8",
     "6.34.10": "18.1.8",
-    "6.36.04": "18.1.8"
+    "6.32.16": "16.0.6"
 } %}
 
 {% set clang_patches = {
@@ -315,15 +315,14 @@ tests:
         - test_pyroot.py
         - test_roofit_multiprocess.py
     script:
-      - echo 1
-      # - python test_pyroot.py
-      # - python test_roofit_multiprocess.py
-      # - python ${PREFIX}/tutorials/analysis/dataframe/df038_NumbaDeclare.py
-      # - root -l -b -q -x test.cpp
-      # - "root -b -l -q -x -e 'gSystem->LoadAllLibraries(); 0'"
-      # - "root -b -l -q -x \"${PREFIX}/tutorials/analysis/tree/run_h1analysis.C\""
-      # - root -l -b -q -x test.cpp++
-      # - "jupyter-kernelspec list | grep ' root '"
+      - python test_pyroot.py
+      - python test_roofit_multiprocess.py
+      - python ${PREFIX}/tutorials/analysis/dataframe/df038_NumbaDeclare.py
+      - root -l -b -q -x test.cpp
+      - "root -b -l -q -x -e 'gSystem->LoadAllLibraries(); 0'"
+      - "root -b -l -q -x \"${PREFIX}/tutorials/analysis/tree/run_h1analysis.C\""
+      - root -l -b -q -x test.cpp++
+      - "jupyter-kernelspec list | grep ' root '"
 {% endif %}
 
 about:
