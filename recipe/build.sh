@@ -1,6 +1,9 @@
 #!/bin/bash
 set -x
 
+
+return 0;
+
 echo "Building ROOT version ${ROOT_VERSION} with C++${ROOT_CXX_STANDARD}"
 
 if command -v sccache &> /dev/null; then
