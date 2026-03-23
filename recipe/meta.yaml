@@ -68,7 +68,9 @@ source:
     - patches/0001-Patch-for-apple-silicon.patch
     - patches/0001-Set-LLVM_REQUIRES_EH-for-Cling.patch
     - patches/0001-Hackily-fix-cross-compilation.patch
+    {% if version < "6.38" %}
     - patches/0002-Debugging.patch
+    {% endif %}
     - patches/0001-Remove-bad-check-on-SDK-for-std_darwin.MacOSX14.2.sd.patch # [osx]
     - patches/0001-std_darwin.modulemap-Remove-headers-for-MacOSX15.0.s.patch # [osx]
     - patches/0002-Remove-cocoa-afterimage-overrides.patch # [osx]
