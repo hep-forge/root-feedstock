@@ -1,4 +1,5 @@
 {% set versions = {
+    "6.38.04": "3d909ce7b1f8c296834f95e617dd51ccca5cdab041798c6c05a4c10bf779eb36",
     "6.36.04": "65a246d2578d2f04f7ad400a26cfc6c7c9c19878434a3d8f4d0bcf7deec4f2ec",
     "6.34.10": "5b4cc60867d7f01902c3bb05a2f3e3cf9808e3a89ab139062751a3a5b375253e",
     "6.32.16": "f26546ba7a09a41d491541312f4d115e7eccf250bd7f9e8aee9168cda0aa1ba6"
@@ -15,18 +16,21 @@ package:
   version: {{ environ.get('ANACONDA_VERSION', version)|replace("-", ".") }}
 
 {% set root_cxx_standard = {
+    "6.38.04": "23",
     "6.36.04": "23",
     "6.34.10": "20",
     "6.32.16": "17"
 } %}
 
 {% set python_version = {
+    "6.38.04": "3.14",
     "6.36.04": "3.12",
     "6.34.10": "3.12",
     "6.32.16": "3.10"
 } %}
 
 {% set gnu_versions = {
+    "6.38.04": "15",
     "6.36.04": "15",
     "6.34.10": "15",
     "6.32.16": "14"
@@ -35,6 +39,7 @@ package:
 {% set gnu_pin = (" " + _gnu_major + ".*") if _gnu_major else "" %}
 
 {% set clang_versions = {
+    "6.38.04": "20.1.8",
     "6.36.04": "18.1.8",
     "6.34.10": "18.1.8",
     "6.32.16": "16.0.6"
