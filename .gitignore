@@ -27,3 +27,4 @@
 /output
 !Makefile
 !.github/**
+*.git
