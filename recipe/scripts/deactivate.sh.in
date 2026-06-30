@@ -1,10 +1,33 @@
 #!/usr/bin/env bash
 
-# reinstate the backup from outside the environment
-if [ ! -z "${CONDA_BACKUP_ROOTSYS}" ]; then
+# ROOTSYS
+if [ ! -z "${CONDA_BACKUP_ROOTSYS+x}" ]; then
 	export ROOTSYS="${CONDA_BACKUP_ROOTSYS}"
 	unset CONDA_BACKUP_ROOTSYS
-# no backup, just unset
 else
 	unset ROOTSYS
+fi
+
+# ROOT_INCLUDE_PATH
+if [ ! -z "${CONDA_BACKUP_ROOT_INCLUDE_PATH+x}" ]; then
+	export ROOT_INCLUDE_PATH="${CONDA_BACKUP_ROOT_INCLUDE_PATH}"
+	unset CONDA_BACKUP_ROOT_INCLUDE_PATH
+else
+	unset ROOT_INCLUDE_PATH
+fi
+
+# ROOT_LIBRARY_PATH
+if [ ! -z "${CONDA_BACKUP_ROOT_LIBRARY_PATH+x}" ]; then
+	export ROOT_LIBRARY_PATH="${CONDA_BACKUP_ROOT_LIBRARY_PATH}"
+	unset CONDA_BACKUP_ROOT_LIBRARY_PATH
+else
+	unset ROOT_LIBRARY_PATH
+fi
+
+# CLING_MODULEMAP_FILES
+if [ ! -z "${CONDA_BACKUP_CLING_MODULEMAP_FILES+x}" ]; then
+	export CLING_MODULEMAP_FILES="${CONDA_BACKUP_CLING_MODULEMAP_FILES}"
+	unset CONDA_BACKUP_CLING_MODULEMAP_FILES
+else
+	unset CLING_MODULEMAP_FILES
 fi
