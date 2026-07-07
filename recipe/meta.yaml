@@ -382,15 +382,18 @@ about:
 extra:
   recipe-maintainers:
     - meiyasan
-  # Protected from the anaconda-channel trim's "keep newest 2 per branch"
-  # rule (see scripts/templates/autoupload.yml's Trim step /
-  # channel-maintenance.yml), keyed by branch/label -- root only
-  # publishes under "main" so far. These are pinned by downstream
-  # feedstocks' conda_build_config.yaml `root:` variant matrix and must
-  # stay published for those builds to work:
-  #   6.34 -> apfelgrid, applgrid, fastnlo, hepmc, rapgap, rivet, xfitter, xfitter-dev
-  #   6.32 -> escalade
-  keep_versions:
+  # Long-Term-Supported in *this channel* -- protected from the
+  # anaconda-channel trim's "keep newest 2 per branch" rule (see
+  # scripts/templates/autoupload.yml's Trim step / channel-maintenance.yml),
+  # keyed by branch/label -- root only publishes under "main" so far.
+  # (Not to be confused with any upstream software's own "LTS" release
+  # naming -- this is hep-forge's own channel-retention concept.) These
+  # are pinned by downstream feedstocks' conda_build_config.yaml `root:`
+  # variant matrix and must stay published for those builds to work --
+  # this list goes stale fast (already had to be corrected once); check
+  # `make doctor root`'s "who pins a specific version-line of this
+  # package" section for the live, always-current picture rather than
+  # trusting this comment.
+  lts:
     main:
       - "6.34.10"
-      - "6.32.16"
