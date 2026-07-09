@@ -59,7 +59,7 @@ lz4_c:
 numpy:
 - '2'
 openssl:
-- '3.5'
+- '3.0'
 pcre:
 - '8'
 root_cxx_standard:
