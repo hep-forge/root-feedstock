@@ -14,14 +14,3 @@ fortran_compiler:
   - gfortran
 packages:
   - numpy
-
-# Build against the oldest still-published openssl 3.x minor (patch
-# floats to the latest 3.0.z). Without this the build picks up conda-forge's
-# global default (currently 3.5), baking in ">=3.5.x,<4.0a0" via
-# run_exports -- higher than what some prebuilt conda-forge binaries
-# (e.g. git, linked against 3.0.0) tolerate at runtime ("OpenSSL version
-# mismatch" trips on a major.minor drift). See cernlib-feedstock's
-# conda_build_config.yaml for the full rationale; kept in sync here so
-# root doesn't drag the shared environment's openssl floor back up.
-openssl:
-  - 3.0
