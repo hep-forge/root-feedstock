@@ -115,6 +115,16 @@ source:
     - patches/0019-Disable-libcxx-availability-in-cling-runtime.patch
     - patches/0021-fix-Set-default-visibility-on-dictionary-targets-for.patch
     - patches/0022-fix-Set-CXX_VISIBILITY_PRESET-hidden-for-ClingUtils.patch
+    # top-level CMakeLists.txt's "populate root-config --config args" loop
+    # does `if((...) AND (NOT ${${var}} STREQUAL "") AND ...)` -- unquoted,
+    # so whenever a cache variable (iterated via CACHE_VARIABLES) holds a
+    # semicolon-separated list value (e.g. CLING_LIBRARIES =
+    # "clingInterpreter;clingMetaProcessor;clingUtils"), ${${var}} expands
+    # to multiple unquoted tokens inside the if(), breaking STREQUAL's
+    # argument count ("Unknown arguments specified"). A one-character
+    # upstream quoting bug, not target-specific -- reproduces on both
+    # linux-64 and linux-aarch64.
+    - patches/0023-quote-list-valued-cache-var-in-config-args-if.patch
     {% endif %}
     {% if version < "6.32.10" %}
     - patches/0001-Reset-CMAKE-module-path-for-interpreter.patch
