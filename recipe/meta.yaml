@@ -1,4 +1,5 @@
 {% set versions = {
+    "6.40.04": "02b994fd645dbb7b89f5ab9342278d3c53bf2ed46d50aebd1aecccfa040711c4",
     "6.38.04": "3d909ce7b1f8c296834f95e617dd51ccca5cdab041798c6c05a4c10bf779eb36",
     "6.36.04": "65a246d2578d2f04f7ad400a26cfc6c7c9c19878434a3d8f4d0bcf7deec4f2ec",
     "6.34.10": "5b4cc60867d7f01902c3bb05a2f3e3cf9808e3a89ab139062751a3a5b375253e",
@@ -16,6 +17,7 @@ package:
   version: {{ environ.get('ANACONDA_VERSION', version)|replace("-", ".") }}
 
 {% set root_cxx_standard = {
+    "6.40.04": "23",
     "6.38.04": "23",
     "6.36.04": "23",
     "6.34.10": "20",
@@ -23,6 +25,7 @@ package:
 } %}
 
 {% set python_version = {
+    "6.40.04": "3.12",
     "6.38.04": "3.12",
     "6.36.04": "3.12",
     "6.34.10": "3.12",
@@ -35,6 +38,7 @@ package:
 # runtime libraries only need a lower bound (gnu_min): libstdc++/libgcc are
 # backward compatible, and conda-forge packages may require newer ones.
 {% set gnu_versions = {
+    "6.40.04": "14",
     "6.38.04": "14",
     "6.36.04": "14",
     "6.34.10": "14",
@@ -45,6 +49,7 @@ package:
 {% set gnu_min = (" >=" + _gnu_major) if _gnu_major else "" %}
 
 {% set clang_versions = {
+    "6.40.04": "20.1.8",
     "6.38.04": "20.1.8",
     "6.36.04": "18.1.8",
     "6.34.10": "18.1.8",
@@ -52,6 +57,7 @@ package:
 } %}
 
 {% set clang_patches = {
+    "6.40.04": "64004",
     "6.38.04": "63800",
     "6.36.04": "63604",
     "6.34.10": "63406",
@@ -77,9 +83,15 @@ source:
     {% else %}
     - patches/root-x.xx.xx_cling-runtime-sysroot.patch
     {% endif %}
+    # 6.40 dropped the code these three patch (forced builtin FreeType, the
+    # cross-compilation hack target)
+    {% if version < "6.40" %}
     - patches/0001-Patch-for-apple-silicon.patch
+    {% endif %}
     - patches/0001-Set-LLVM_REQUIRES_EH-for-Cling.patch
+    {% if version < "6.40" %}
     - patches/0001-Hackily-fix-cross-compilation.patch
+    {% endif %}
     {% if version < "6.38" %}
     - patches/0002-Debugging.patch
     {% endif %}
@@ -91,7 +103,9 @@ source:
     - patches/0001-std_darwin.modulemap-Remove-headers-for-MacOSX15.0.s.patch # [osx]
     {% endif %}
     - patches/0002-Remove-cocoa-afterimage-overrides.patch # [osx]
+    {% if version < "6.40" %}
     - patches/0001-Detect-which-ar-binary-should-be-used-to-build-libAf.patch
+    {% endif %}
     - patches/0001-Don-t-include-RootCPack.patch
     # --- Conditionally applied patches ---
     {% if version < "6.36" %}
@@ -116,7 +130,13 @@ source:
     - patches/0020-feat-use-ROOT-s-own-libc.modulemap-on-macOS-instead-.patch  # [osx]
     - patches/0007-Disable-hsimple.root-generation-if-cross-compiling.patch  # [build_platform != target_platform]
     - patches/0008-try_run-cannot-be-used-when-cross-compiling.patch  # [build_platform != target_platform]
+    {% if version < "6.40" %}
     - patches/0017-Use-resolved-executable-path-for-clang-Driver.patch
+    {% else %}
+    # 6.40: conda-forge's version of the same fix (driver anchored on
+    # $ROOTSYS/bin), taken from conda-forge/root-feedstock
+    - patches/0024-cling-Anchor-the-interpreter-s-clang-driver-on-ROOTS.patch
+    {% endif %}
     - patches/0018-Try-relative-libstdc-include-directories.patch
     - patches/0019-Disable-libcxx-availability-in-cling-runtime.patch
     - patches/0021-fix-Set-default-visibility-on-dictionary-targets-for.patch
@@ -130,6 +150,10 @@ source:
     # argument count ("Unknown arguments specified"). A one-character
     # upstream quoting bug, not target-specific -- reproduces on both
     # linux-64 and linux-aarch64.
+    {% endif %}
+    {% if version < "6.40" %}
+    # Every version before 6.40 has this bug (6.34.10 failed on it with a
+    # newer CMake, 2026-10-29); 6.40 quotes it upstream.
     - patches/0023-quote-list-valued-cache-var-in-config-args-if.patch
     {% endif %}
     {% if version < "6.32.10" %}
