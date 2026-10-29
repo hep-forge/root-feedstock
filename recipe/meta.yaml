@@ -165,6 +165,9 @@ source:
 
 build:
   number: 1
+  # hep-forge publishes Linux only, and ROOT's hep-forge dependencies
+  # (pythia, ...) have no macOS builds, so the macOS leg can't solve.
+  skip: true  # [not linux]
   string: "py{{ python_version.get(version).replace('.', '') }}_gcc{{ gnu_versions.get(version).replace('.', '') }}"
   script_env:
     - ROOT_VERSION={{ version }}
@@ -253,13 +256,13 @@ requirements:
     - clangdev {{ clang_version }}.* {{ clang_patches_version }}*
 {% endif %}
 {% endif %}
-    - libgcc{{ gnu_min }}
-    - libgcc-ng{{ gnu_min }}
-    - libstdcxx{{ gnu_min }}
-    - libstdcxx-ng{{ gnu_min }}
-    - libgcc-devel_linux-64={{ gnu_pin }}
-    - libstdcxx-devel_linux-64={{ gnu_pin }}
-    - libgomp{{ gnu_min }}
+    - libgcc{{ gnu_min }}  # [linux]
+    - libgcc-ng{{ gnu_min }}  # [linux]
+    - libstdcxx{{ gnu_min }}  # [linux]
+    - libstdcxx-ng{{ gnu_min }}  # [linux]
+    - libgcc-devel_linux-64={{ gnu_pin }}  # [linux]
+    - libstdcxx-devel_linux-64={{ gnu_pin }}  # [linux]
+    - libgomp{{ gnu_min }}  # [linux]
     
   host:
     - {{ compiler('c') }}
@@ -323,13 +326,13 @@ requirements:
     # c.f. https://github.com/conda-forge/root-feedstock/pull/292#discussion_r2334082389
     - zeromq * drafts_*
 {% endif %}
-    - libgcc{{ gnu_min }}
-    - libgcc-ng{{ gnu_min }}
-    - libstdcxx{{ gnu_min }}
-    - libstdcxx-ng{{ gnu_min }}
-    - libgcc-devel_linux-64={{ gnu_pin }}
-    - libstdcxx-devel_linux-64={{ gnu_pin }}
-    - libgomp{{ gnu_min }}
+    - libgcc{{ gnu_min }}  # [linux]
+    - libgcc-ng{{ gnu_min }}  # [linux]
+    - libstdcxx{{ gnu_min }}  # [linux]
+    - libstdcxx-ng{{ gnu_min }}  # [linux]
+    - libgcc-devel_linux-64={{ gnu_pin }}  # [linux]
+    - libstdcxx-devel_linux-64={{ gnu_pin }}  # [linux]
+    - libgomp{{ gnu_min }}  # [linux]
 
 {% if not (osx and arch == 'arm64') %}
 # {% if version < "6.34" %}
@@ -365,13 +368,13 @@ requirements:
     - xorg-libxft
     - libglu
 {% endif %}
-    - libgcc{{ gnu_min }}
-    - libgcc-ng{{ gnu_min }}
-    - libstdcxx{{ gnu_min }}
-    - libstdcxx-ng{{ gnu_min }}
-    - libgcc-devel_linux-64={{ gnu_pin }}
-    - libstdcxx-devel_linux-64={{ gnu_pin }}
-    - libgomp{{ gnu_min }}
+    - libgcc{{ gnu_min }}  # [linux]
+    - libgcc-ng{{ gnu_min }}  # [linux]
+    - libstdcxx{{ gnu_min }}  # [linux]
+    - libstdcxx-ng{{ gnu_min }}  # [linux]
+    - libgcc-devel_linux-64={{ gnu_pin }}  # [linux]
+    - libstdcxx-devel_linux-64={{ gnu_pin }}  # [linux]
+    - libgomp{{ gnu_min }}  # [linux]
     - gsl
 
   run_constraints:
