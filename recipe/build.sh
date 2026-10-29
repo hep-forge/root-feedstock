@@ -13,9 +13,12 @@ fi
 export GCC_AR="$(which ar)"
 export GCC_RANLIB="$(which ranlib)"
 
-# rebuild afterimage ./configure script after patch
-cp $BUILD_PREFIX/share/gnuconfig/config.* graf2d/asimage/src/libAfterImage || true
-(cd graf2d/asimage/src/libAfterImage; autoconf)
+# rebuild afterimage ./configure script after patch -- only where ROOT still
+# bundles libAfterImage's sources (6.40 removed them: "autoconf: no input file")
+if [ -f graf2d/asimage/src/libAfterImage/configure.in ] || [ -f graf2d/asimage/src/libAfterImage/configure.ac ]; then
+  cp $BUILD_PREFIX/share/gnuconfig/config.* graf2d/asimage/src/libAfterImage || true
+  (cd graf2d/asimage/src/libAfterImage; autoconf)
+fi
 
 if [[ "${target_platform}" == "linux-"* ]]; then
   # Conda's binary relocation can result in string changing which can result in errors like
