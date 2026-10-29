@@ -29,14 +29,20 @@ package:
     "6.32.16": "3.10"
 } %}
 
+# GCC major ROOT is built with. Keep it at the channel floor (14): ROOT's
+# interpreter needs the exact compiler and C++ headers it was built with at
+# run time (gnu_pin), so this major is imposed on every ROOT user. The GCC
+# runtime libraries only need a lower bound (gnu_min): libstdc++/libgcc are
+# backward compatible, and conda-forge packages may require newer ones.
 {% set gnu_versions = {
-    "6.38.04": "15",
-    "6.36.04": "15",
-    "6.34.10": "15",
+    "6.38.04": "14",
+    "6.36.04": "14",
+    "6.34.10": "14",
     "6.32.16": "14"
 } %}
 {% set _gnu_major = gnu_versions.get(version, "") %}
 {% set gnu_pin = (" " + _gnu_major + ".*") if _gnu_major else "" %}
+{% set gnu_min = (" >=" + _gnu_major) if _gnu_major else "" %}
 
 {% set clang_versions = {
     "6.38.04": "20.1.8",
@@ -134,7 +140,7 @@ source:
     {% endif %}
 
 build:
-  number: 0
+  number: 1
   string: "py{{ python_version.get(version).replace('.', '') }}_gcc{{ gnu_versions.get(version).replace('.', '') }}"
   script_env:
     - ROOT_VERSION={{ version }}
@@ -150,9 +156,13 @@ build:
   run_exports:
     - {{ pin_compatible('root', max_pin='x.x') }}
 
-    # Linux GCC C/C++/Fortran runtimes: pin major only (ABI stable per major)
-    - {{ pin_compatible('libgcc-ng',     max_pin='x') }}        # [linux]
-    - {{ pin_compatible('libstdcxx-ng',  max_pin='x') }}        # [linux]
+    # Linux GCC runtimes: lower bound only -- newer libgcc/libstdc++ run
+    # binaries built with GCC 14, and an upper bound would block every
+    # conda-forge package that needs a newer runtime.
+    # Written out: pin_compatible would take the newest runtime the build
+    # env happened to resolve (16.x) as the floor for every ROOT user.
+    - libgcc-ng{{ gnu_min }}        # [linux]
+    - libstdcxx-ng{{ gnu_min }}     # [linux]
 
     # C stdlib macro (cross-platform)
     - {{ stdlib("c") }}
@@ -176,9 +186,9 @@ build:
 
 requirements:
   build:
-    - {{ compiler('c') }}{{ gnu_pin }}
-    - {{ compiler('cxx') }}{{ gnu_pin }}
-    - {{ compiler('fortran') }}{{ gnu_pin }}
+    - {{ compiler('c') }}
+    - {{ compiler('cxx') }}
+    - {{ compiler('fortran') }}
     - {{ stdlib("c") }}
     - autoconf
     - cmake
@@ -219,17 +229,17 @@ requirements:
     - clangdev {{ clang_version }}.* {{ clang_patches_version }}*
 {% endif %}
 {% endif %}
-    - libgcc={{ gnu_pin }}
-    - libgcc-ng={{ gnu_pin }}
-    - libstdcxx={{ gnu_pin }}
-    - libstdcxx-ng={{ gnu_pin }}
+    - libgcc{{ gnu_min }}
+    - libgcc-ng{{ gnu_min }}
+    - libstdcxx{{ gnu_min }}
+    - libstdcxx-ng{{ gnu_min }}
     - libgcc-devel_linux-64={{ gnu_pin }}
     - libstdcxx-devel_linux-64={{ gnu_pin }}
-    - libgomp={{ gnu_pin }}
+    - libgomp{{ gnu_min }}
     
   host:
-    - {{ compiler('c') }}{{ gnu_pin }}
-    - {{ compiler('cxx') }}{{ gnu_pin }}
+    - {{ compiler('c') }}
+    - {{ compiler('cxx') }}
     - {{ stdlib("c") }}
     - libblas
     - libcblas
@@ -289,13 +299,13 @@ requirements:
     # c.f. https://github.com/conda-forge/root-feedstock/pull/292#discussion_r2334082389
     - zeromq * drafts_*
 {% endif %}
-    - libgcc={{ gnu_pin }}
-    - libgcc-ng={{ gnu_pin }}
-    - libstdcxx={{ gnu_pin }}
-    - libstdcxx-ng={{ gnu_pin }}
+    - libgcc{{ gnu_min }}
+    - libgcc-ng{{ gnu_min }}
+    - libstdcxx{{ gnu_min }}
+    - libstdcxx-ng{{ gnu_min }}
     - libgcc-devel_linux-64={{ gnu_pin }}
     - libstdcxx-devel_linux-64={{ gnu_pin }}
-    - libgomp={{ gnu_pin }}
+    - libgomp{{ gnu_min }}
 
 {% if not (osx and arch == 'arm64') %}
 # {% if version < "6.34" %}
@@ -314,8 +324,8 @@ requirements:
   run:
     - python {{ python_version.get(version) }}.* #*_cpython
     - numpy
-    - {{ compiler('c') }}{{ gnu_pin }}
-    - {{ compiler('cxx') }}{{ gnu_pin }}
+    - {{ compiler('c') }}
+    - {{ compiler('cxx') }}
     - {{ stdlib("c") }}
     - xxhash
     - nlohmann_json
@@ -331,13 +341,13 @@ requirements:
     - xorg-libxft
     - libglu
 {% endif %}
-    - libgcc={{ gnu_pin }}
-    - libgcc-ng={{ gnu_pin }}
-    - libstdcxx={{ gnu_pin }}
-    - libstdcxx-ng={{ gnu_pin }}
+    - libgcc{{ gnu_min }}
+    - libgcc-ng{{ gnu_min }}
+    - libstdcxx{{ gnu_min }}
+    - libstdcxx-ng{{ gnu_min }}
     - libgcc-devel_linux-64={{ gnu_pin }}
     - libstdcxx-devel_linux-64={{ gnu_pin }}
-    - libgomp={{ gnu_pin }}
+    - libgomp{{ gnu_min }}
     - gsl
 
   run_constraints:
