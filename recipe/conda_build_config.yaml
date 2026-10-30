@@ -39,3 +39,9 @@ libgcc_version:        # [linux]
   - 14.*
 libstdcxx_version:     # [linux]
   - 14.*
+
+# Build against NumPy 2. Its builds export numpy >=1.25,<3, so environments
+# get the newest NumPy and can still use 1.25/1.26. Unpinned, conda-build
+# falls back to its default 1.26, which exports numpy <2 to every user.
+numpy:
+  - 2
