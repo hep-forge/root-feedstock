@@ -125,9 +125,12 @@ CXXFLAGS=$(echo "${CXXFLAGS}" | sed -E 's@-std=c\+\+[^ ]+@@g')
 export CXXFLAGS
 
 # The cross-linux toolchain breaks find_file relative to the current file
-# Patch up with sed
-sed -i -E 's#(ROOT_TEST_DRIVER RootTestDriver.cmake PATHS \$\{THISDIR\} \$\{CMAKE_MODULE_PATH\} NO_DEFAULT_PATH)#\1 CMAKE_FIND_ROOT_PATH_BOTH#g' \
-    ${SRC_DIR}/cmake/modules/RootNewMacros.cmake
+# Patch up with sed. ROOT 6.40 dropped RootNewMacros.cmake and sets
+# ROOT_TEST_DRIVER directly, so there is nothing to patch there.
+if [[ -f "${SRC_DIR}/cmake/modules/RootNewMacros.cmake" ]]; then
+    sed -i -E 's#(ROOT_TEST_DRIVER RootTestDriver.cmake PATHS \$\{THISDIR\} \$\{CMAKE_MODULE_PATH\} NO_DEFAULT_PATH)#\1 CMAKE_FIND_ROOT_PATH_BOTH#g' \
+        ${SRC_DIR}/cmake/modules/RootNewMacros.cmake
+fi
 
 # The basics
 if [ "${ROOT_CONDA_BUILD_TYPE-}" == "" ]; then
