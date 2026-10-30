@@ -15,8 +15,8 @@ ROOT: analyzing petabytes of data, scientifically.
 
 | Architecture | Latest published |
 |--------------|------------------|
-| linux-amd64 (`linux-64`) | ✅ `6.38.04` |
-| linux-arm64 (`linux-aarch64`) | ✅ `6.38.04` |
+| linux-amd64 (`linux-64`) | ✅ `6.40.04` |
+| linux-arm64 (`linux-aarch64`) | ✅ `6.40.04` |
 
 _As of the last feedstock render; the badges above are live._
 
