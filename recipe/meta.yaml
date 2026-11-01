@@ -444,3 +444,5 @@ extra:
   lts:
     main:
       - "6.34.10"
+      # kept on request; the 6.36.04 rebuild trimmed itself on 2026-10-30
+      - "6.36.04"
