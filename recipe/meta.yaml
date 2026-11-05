@@ -102,7 +102,6 @@ source:
     - patches/0001-Remove-bad-check-on-SDK-for-std_darwin.MacOSX14.2.sd.patch # [osx]
     - patches/0001-std_darwin.modulemap-Remove-headers-for-MacOSX15.0.s.patch # [osx]
     {% endif %}
-    - patches/0002-Remove-cocoa-afterimage-overrides.patch # [osx]
     {% if version < "6.40" %}
     - patches/0001-Detect-which-ar-binary-should-be-used-to-build-libAf.patch
     {% endif %}
@@ -124,9 +123,12 @@ source:
     {% endif %}
     {% if version >= "6.38" %}
     - patches/0013-Disable-libcxx-availability-in-rootcling.patch  # [osx]
-    - patches/0014-Force-SDKROOT.patch  # [osx]
     - patches/0015-Disable-libcxx-availability-in-makepch.patch  # [osx]
+    {% if version < "6.40" %}
+    # 6.40 has both upstream (conda-forge dropped them there too)
+    - patches/0014-Force-SDKROOT.patch  # [osx]
     - patches/0016-build-Use-appropriate-CMake-to-link-against-MacOS-fr.patch  # [osx]
+    {% endif %}
     - patches/0020-feat-use-ROOT-s-own-libc.modulemap-on-macOS-instead-.patch  # [osx]
     - patches/0007-Disable-hsimple.root-generation-if-cross-compiling.patch  # [build_platform != target_platform]
     - patches/0008-try_run-cannot-be-used-when-cross-compiling.patch  # [build_platform != target_platform]
@@ -165,10 +167,14 @@ source:
 
 build:
   number: 2
-  # hep-forge publishes Linux only, and ROOT's hep-forge dependencies
-  # (pythia, ...) have no macOS builds, so the macOS leg can't solve.
-  skip: true  # [not linux]
-  string: "py{{ python_version.get(version).replace('.', '') }}_gcc{{ gnu_versions.get(version).replace('.', '') }}"
+  # macOS: the ROOT slots only (6.38, 6.40), built natively on arm64 with
+  # the clang 20 conda-forge's ROOT uses there
+  skip: true  # [win]
+  {% if osx and version < "6.38" %}
+  skip: true
+  {% endif %}
+  string: "py{{ python_version.get(version).replace('.', '') }}_gcc{{ gnu_versions.get(version).replace('.', '') }}"  # [linux]
+  string: "py{{ python_version.get(version).replace('.', '') }}_clang{{ clang_version.split('.')[0] }}"  # [osx]
   script_env:
     - ROOT_VERSION={{ version }}
     - ROOT_VERSION_MAJOR={{ major }}
@@ -334,7 +340,6 @@ requirements:
     - libstdcxx-devel_linux-64={{ gnu_pin }}  # [linux]
     - libgomp{{ gnu_min }}  # [linux]
 
-{% if not (osx and arch == 'arm64') %}
 # {% if version < "6.34" %}
 #     - llvm {{ clang_version }}.*
 #     - llvmdev {{ clang_version }}.*
@@ -346,7 +351,6 @@ requirements:
     - llvmdev {{ clang_version }}.*
     - llvm-openmp {{ clang_version }}.*
     - clangdev {{ clang_version }}.* {{ clang_patches_version }}*
-{% endif %}
 
   run:
     - python {{ python_version.get(version) }}.* #*_cpython
@@ -375,6 +379,8 @@ requirements:
     - libgcc-devel_linux-64={{ gnu_pin }}  # [linux]
     - libstdcxx-devel_linux-64={{ gnu_pin }}  # [linux]
     - libgomp{{ gnu_min }}  # [linux]
+    # cling parses the libc++ headers of the clang ROOT was built with
+    - libcxx-devel {{ clang_version.split('.')[0] }}.*  # [osx]
     - gsl
 
   run_constraints:
@@ -395,6 +401,17 @@ test:
     - root -b -l -q -x -e 'gStyle->SetCanvasPreferGL(kTRUE); c = new TCanvas(); if (!c->UseGL()) { throw std::runtime_error("OpenGL does not appear to be working"); }'
     - root -b -l -q -x "${PREFIX}/tutorials/tree/run_h1analysis.C"
 {% else %}
+{% if osx %}
+# conda-build reads only `test:` (the `tests:` list below is rattler-build
+# syntax and never runs); a short smoke test for the macOS build
+test:
+  commands:
+    - root -l -b -q -x -e '2+3; 0'
+    - root -l -b -q -x test.cpp
+    - python -c "import ROOT; ROOT.gInterpreter.Declare('int hepforge_f() { return 7; }'); assert ROOT.hepforge_f() == 7"
+  files:
+    - test.cpp
+{% endif %}
 tests:
   - python:
       imports:
@@ -443,6 +460,6 @@ extra:
   # trusting this comment.
   lts:
     main:
-      - "6.34.10"
-      # kept on request; the 6.36.04 rebuild trimmed itself on 2026-10-30
-      - "6.36.04"
+      # the ROOT slots in channel.yaml (root_slots): 6.40 is the newest
+      # version, 6.38 is kept here. 6.34/6.36 are retired (2026-11-05).
+      - "6.38.04"

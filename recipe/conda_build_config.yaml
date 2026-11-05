@@ -45,3 +45,10 @@ libstdcxx_version:     # [linux]
 # falls back to its default 1.26, which exports numpy <2 to every user.
 numpy:
   - 2
+
+# macOS: the clang (and libc++) ROOT's own interpreter is built from, as in
+# conda-forge's ROOT; cling reads that libc++'s headers at run time
+c_compiler_version:    # [osx]
+  - 20                       # [osx]
+cxx_compiler_version:  # [osx]
+  - 20                       # [osx]
