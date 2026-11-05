@@ -84,6 +84,17 @@ if [[ "${target_platform}" == osx* ]]; then
     CXXFLAGS="${CXXFLAGS} -D_LIBCPP_DISABLE_AVAILABILITY"
 fi
 
+if [[ "${target_platform}" == osx* ]]; then
+    # cling's std modulemap is generated from the SDK's libc++ when the SDK
+    # has one, else from $BUILD_PREFIX's. conda-forge's SDK has none; the
+    # runner's Xcode SDK has Apple's libc++ (with locale.h, ...), which is
+    # not the libc++ 20 the build and cling use ("header 'locale.h' not
+    # found"). Always take $BUILD_PREFIX's in a conda build.
+    fix=cmake/scripts/std_modulemap_darwin_fix.py
+    sed -i '0,/    if not os.path.exists(cpp_modulemap):/s//    if os.environ.get("CONDA_BUILD", "0") == "1" or not os.path.exists(cpp_modulemap):/' "${fix}"
+    grep -qF 'if os.environ.get("CONDA_BUILD", "0") == "1" or not' "${fix}" || { echo "std modulemap fix did not apply"; exit 1; }
+fi
+
 export CFLAGS="${CFLAGS//-isystem /-I}"
 export CPPFLAGS="${CPPFLAGS//-isystem /-I}"
 export CXXFLAGS="${CXXFLAGS//-isystem /-I}"
