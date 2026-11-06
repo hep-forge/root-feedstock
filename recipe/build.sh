@@ -85,6 +85,25 @@ if [[ "${target_platform}" == osx* ]]; then
 fi
 
 if [[ "${target_platform}" == osx* ]]; then
+    # Build against the SDK conda-forge's ROOT uses (MacOSX11.0, same mirror
+    # and checksum as conda-forge-ci-setup), not the runner's Xcode SDK:
+    # cling bakes the SDK's C headers into its modules, and the newer Xcode
+    # SDKs lack headers ROOT's libc.modulemap names ("stdarg.h not found").
+    sdk_dir="${SRC_DIR}/macos-sdk"
+    if [[ ! -d "${sdk_dir}/MacOSX11.0.sdk" ]]; then
+        mkdir -p "${sdk_dir}"
+        curl -fsSL --retry 3 -o "${sdk_dir}/sdk.tar.xz" \
+            https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX11.0.sdk.tar.xz
+        echo "d3feee3ef9c6016b526e1901013f264467bb927865a03422a9cb925991cc9783 *${sdk_dir}/sdk.tar.xz" | shasum -a 256 -c
+        tar -xf "${sdk_dir}/sdk.tar.xz" -C "${sdk_dir}"
+        rm "${sdk_dir}/sdk.tar.xz"
+    fi
+    export CONDA_BUILD_SYSROOT="${sdk_dir}/MacOSX11.0.sdk"
+    export SDKROOT="${CONDA_BUILD_SYSROOT}"
+    CMAKE_PLATFORM_FLAGS+=("-DCMAKE_OSX_SYSROOT=${CONDA_BUILD_SYSROOT}")
+fi
+
+if [[ "${target_platform}" == osx* ]]; then
     # cling's std modulemap is generated from the SDK's libc++ when the SDK
     # has one, else from $BUILD_PREFIX's. conda-forge's SDK has none; the
     # runner's Xcode SDK has Apple's libc++ (with locale.h, ...), which is
