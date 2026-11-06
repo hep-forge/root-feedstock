@@ -197,8 +197,10 @@ build:
     - libgcc-ng{{ gnu_min }}        # [linux]
     - libstdcxx-ng{{ gnu_min }}     # [linux]
 
-    # C stdlib macro (cross-platform)
-    - {{ stdlib("c") }}
+    # the sysroot floor on Linux; on macOS a deployment-target pin would hold
+    # every consumer at 11.0 (macosx_deployment_target's own run_exports
+    # already give __osx >=11.0), as in conda-forge's ROOT
+    - {{ stdlib("c") }}  # [linux]
       
   ignore_prefix_files:
     - lib/*.pcm
@@ -357,7 +359,7 @@ requirements:
     - numpy
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
-    - {{ stdlib("c") }}
+    - {{ stdlib("c") }}  # [linux]
     - xxhash
     - nlohmann_json
     - cffi
